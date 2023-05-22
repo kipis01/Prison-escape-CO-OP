@@ -57,6 +57,7 @@ public class GamePanel extends JPanel {
 	}
 
 	private void importImg() {
+		System.out.println(getClass().getResource("."));
 		InputStream is = getClass().getResourceAsStream("/player_sprites.png"); // Input stream
 
 		try {
