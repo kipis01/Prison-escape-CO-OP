@@ -1,11 +1,10 @@
 package Networking.Packets;
 
-public class HandshakePacket {
-    String password;
-    int clientPort;
+public class HandshakePacket extends Packet {
+    public int clientPort;
 
     public HandshakePacket(String password, int clientPort) {
-        this.password = password;
+        super(password);
         this.clientPort = clientPort;
     }
 }
