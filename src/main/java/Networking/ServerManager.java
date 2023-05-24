@@ -26,6 +26,7 @@ public class ServerManager {
         serverThread.join(1000);
     }
 
+    //TODO:Add important and less important packet handling through TCP and UDP
     public void SendPacket(Object object) throws ServerFailedException {
         server.queuePacket(object);
     }

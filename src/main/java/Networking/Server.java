@@ -15,13 +15,14 @@ import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
 
-public class Server implements Runnable{
+class Server implements Runnable {
     final private int serverPort;
+    //TODO:Add UDP
     private Integer clientPort = null;
     private InetAddress clientAddress = null;
     private ServerSocket serverSocket = null;
-    private InputStream inputStream = null;
-    private ObjectInputStream objectInput = null;
+    private InputStream inputStream = null;//TODO:Move to PacketReader
+    private ObjectInputStream objectInput = null;//TODO:Move to PacketReader
     private OutputStream outputStream = null;
     private ObjectOutputStream objectOutput = null;
     private Socket socket = null;
@@ -90,6 +91,7 @@ public class Server implements Runnable{
         }
         socket = serverSocket.accept();
         socket.setKeepAlive(true);
+        socket.setSoTimeout(500);
         inputStream = socket.getInputStream();
         objectInput = new ObjectInputStream(inputStream);
         outputStream = socket.getOutputStream();
