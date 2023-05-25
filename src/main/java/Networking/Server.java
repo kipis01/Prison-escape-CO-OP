@@ -4,32 +4,28 @@ import Networking.Exceptions.ServerDisconnectException;
 import Networking.Exceptions.ServerFailedException;
 import Networking.Packets.HandshakePacket;
 import Networking.Packets.DataPacket;
-import Networking.Packets.Packet;
+import Networking.Packets.HeartbeatPacket;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDateTime;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 
 class Server implements Runnable {
     final private int serverPort;
-    //TODO:Add UDP
     private Integer clientPort = null;
     private InetAddress clientAddress = null;
     private ServerSocket serverSocket = null;
-    private InputStream inputStream = null;//TODO:Move to PacketReader
-    private ObjectInputStream objectInput = null;//TODO:Move to PacketReader
+    private PacketReader TcpReader = null;
     private OutputStream outputStream = null;
     private ObjectOutputStream objectOutput = null;
     private Socket socket = null;
     private String password = "";
     private volatile boolean finished = false;
     private volatile Queue<DataPacket> dataPackets = new LinkedList<DataPacket>();
-    private LocalDateTime lastReceive = null;
+    private LocalDateTime lastSuccessfulSend = null;
     private ServerFailedException serverFailure = null;
     private ServerDisconnectException serverDisconnected = null;
 
@@ -44,7 +40,7 @@ class Server implements Runnable {
             try {
                 if (clientAddress == null)
                     establishConnection();
-                else if (lastReceive.plusSeconds(3).isBefore(LocalDateTime.now())) {
+                else if (lastSuccessfulSend.plusSeconds(3).isBefore(LocalDateTime.now())) {
                     sendHeartbeat();
                 } else if (dataPackets.size() == 0){
                     Thread.sleep(10);
@@ -57,31 +53,10 @@ class Server implements Runnable {
                 e.printStackTrace();
             }
         }
-        try {
-            if (inputStream != null)
-                inputStream.close();
-            if (outputStream != null)
-                outputStream.close();
-            if (socket != null)
-                socket.close();
-            if (serverSocket != null)
-                serverSocket.close();
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void sendPackets(){
-        Queue<DataPacket> packetsToSend = new LinkedList<>(dataPackets);
-        for (int i = 0; i < 10 && !packetsToSend.isEmpty(); i++){
-            try {
-                objectOutput.writeObject(packetsToSend.peek());
-                packetsToSend.poll();
-            } catch (IOException e) {
-                e.printStackTrace();
-                break;
-            }
-        }
+        try { TcpReader.CloseReader(); } catch (Exception ignored) {}
+        try { outputStream.close(); } catch (Exception ignored) {}
+        try { socket.close(); } catch (Exception ignored) {}
+        try { serverSocket.close(); } catch (Exception ignored) {}
     }
 
     private boolean establishConnection() throws IOException {
@@ -92,33 +67,79 @@ class Server implements Runnable {
         socket = serverSocket.accept();
         socket.setKeepAlive(true);
         socket.setSoTimeout(500);
-        inputStream = socket.getInputStream();
-        objectInput = new ObjectInputStream(inputStream);
+        TcpReader = new PacketReader(socket.getInputStream());
+        TcpReader.run();
         outputStream = socket.getOutputStream();
         objectOutput = new ObjectOutputStream(outputStream);
 
         try{
-            Object rPacket = objectInput.readObject();
-            if (rPacket instanceof HandshakePacket && Objects.equals(((HandshakePacket) rPacket).password, password)){
+            List<Object> packets = new LinkedList<>();
+            for (LocalDateTime started = LocalDateTime.now(); LocalDateTime.now().isBefore(started.plusSeconds(5)) && packets.size() == 0; packets = TcpReader.get()) {
+                try { Thread.sleep(100); } catch (Exception ignored){}
+            }
+
+            HandshakePacket rPacket = (HandshakePacket) packets.stream().filter(p -> p instanceof HandshakePacket).findFirst().orElse(null);
+            if (rPacket != null && password.equals(rPacket.password)) {
                 clientAddress = socket.getInetAddress();
                 clientPort = socket.getPort();
                 return true;
             }
-        } catch (Exception e) {
-            return false;
+        } catch (Exception ignored) { }
+
+        objectOutput.close(); objectOutput = null;
+        outputStream.close(); outputStream = null;
+        TcpReader.CloseReader(true); TcpReader = null;
+        socket.close(); socket = null;
+        return false;
+    }
+
+    private void sendHeartbeat() {//TODO:Check if a packet drop warrants a connection restart
+        if (!sendSinglePacket(new HeartbeatPacket(password, true)))
+            initiateDisconnect();
+    }
+
+    private boolean sendSinglePacket(Object packet) {
+        try {
+            objectOutput.writeObject(packet);
+            lastSuccessfulSend = LocalDateTime.now();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();//TODO:Silence the output
         }
         return false;
     }
 
-    private boolean sendHeartbeat() {
-        //TODO:Implement
-        return false;
+    private void initiateDisconnect() {
+        try { objectOutput.close(); } catch (Exception ignored){} finally { objectOutput = null; }
+        try { outputStream.close(); } catch (Exception ignored){} finally { outputStream = null; }
+        try { TcpReader.CloseReader(true); } catch (Exception ignored){} finally { TcpReader = null; }
+        try { socket.close(); } catch (Exception ignored){} finally { socket = null; }
+        clientPort = null;
+        clientAddress = null;
     }
 
     public void shutDown(){ this.finished = true; }
 
     public void queuePacket(Object packet) throws ServerFailedException {
         dataPackets.add(new DataPacket(packet, password));
+    }
+
+    private void sendPackets(){
+        Queue<DataPacket> packetsToSend = new LinkedList<>(dataPackets);
+        for (int i = 0; i < 10 && !packetsToSend.isEmpty(); i++){
+            try {
+                objectOutput.writeObject(packetsToSend.peek());
+                packetsToSend.poll();
+            } catch (IOException e) {
+                e.printStackTrace();//TODO:Remove
+                initiateDisconnect();
+                break;
+            }
+        }
+    }
+
+    public List<Object> getReceivedPackets() {
+        return TcpReader.pop().stream().filter(p -> !(p instanceof HeartbeatPacket || p instanceof HandshakePacket)).toList();
     }
 
     public boolean serverStatus() throws ServerFailedException, ServerDisconnectException {

@@ -7,4 +7,8 @@ public class HandshakePacket extends Packet {
         super(password);
         this.clientPort = clientPort;
     }
+    public HandshakePacket (HandshakePacket packet) {
+        super(packet.password);
+        clientPort = packet.clientPort;
+    }
 }
