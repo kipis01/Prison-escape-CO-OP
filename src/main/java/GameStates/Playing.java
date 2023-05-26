@@ -1,13 +1,16 @@
 package GameStates;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 
 import Entities.Player;
 import Levels.LevelManager;
 import Main.Game;
 import Ui.PauseOverlay;
+import Utils.LoadSave;
 
 public class Playing extends State implements Statemethods {
 	private Player player;
@@ -16,9 +19,22 @@ public class Playing extends State implements Statemethods {
 	private boolean paused = false;
 	private PauseOverlay pauseOverlay;
 
+	private int xLevelOffset;
+	private int leftBorder = (int) (0.2 * Game.GAME_WIDTH);
+	private int rightBorder = (int) (0.8 * Game.GAME_WIDTH);
+	private int lvlTilesWide = LoadSave.GetLevelData()[0].length;
+	private int maxTilesOffset = lvlTilesWide - Game.TILES_IN_WIDTH;
+	private int maxLevelOffsetX = maxTilesOffset * Game.TILES_SIZE;
+
+	private BufferedImage backgroundImg, backgroundImgLayer2, backgroundImgLayer3;
+
 	public Playing(Game game) {
 		super(game);
 		initClasses();
+
+		backgroundImg = LoadSave.GetSpriteAtlas(LoadSave.PLAYING_BACKGROUND_IMG);
+		backgroundImgLayer2 = LoadSave.GetSpriteAtlas(LoadSave.PLAYING_BACKGROUND_IMG_LAYER_2);
+		backgroundImgLayer3 = LoadSave.GetSpriteAtlas(LoadSave.PLAYING_BACKGROUND_IMG_LAYER_3);
 	}
 
 	private void initClasses() {
@@ -38,18 +54,57 @@ public class Playing extends State implements Statemethods {
 		if (!paused) {
 			levelManager.update();
 			player.update();
+			checkCloseToBorder();
 		} else {
 			pauseOverlay.update();
 		}
 	}
 
+	private void checkCloseToBorder() {
+		int playerX = (int) player.getHitbox().x;
+		int diff = playerX - xLevelOffset;
+
+		if (diff > rightBorder)
+			xLevelOffset += diff - rightBorder;
+		else if (diff < leftBorder)
+			xLevelOffset += diff - leftBorder;
+		if (xLevelOffset > maxLevelOffsetX)
+			xLevelOffset = maxLevelOffsetX;
+		else if (xLevelOffset < 0)
+			xLevelOffset = 0;
+	}
+
 	@Override
 	public void draw(Graphics g) {
-		levelManager.draw(g);
-		player.render(g);
+		g.drawImage(backgroundImg, 0, 0, Game.GAME_WIDTH, Game.GAME_HEIGHT, null);
 
-		if (paused)
+		drawLayer2(g);
+		drawLayer3(g);
+
+		levelManager.draw(g, xLevelOffset);
+		player.render(g, xLevelOffset);
+
+		if (paused) {
+			g.setColor(new Color(0, 0, 0, 150));
+			g.fillRect(0, 0, Game.GAME_WIDTH, Game.GAME_HEIGHT);
 			pauseOverlay.draw(g);
+		}
+	}
+
+	private void drawLayer2(Graphics g) {
+		for (int i = 0; i < 3; i++) {
+			g.drawImage(backgroundImgLayer2, 0 + i * Game.GAME_WIDTH - (int) (xLevelOffset * 0.3), 0, Game.GAME_WIDTH,
+					Game.GAME_HEIGHT, null);
+		}
+
+	}
+
+	private void drawLayer3(Graphics g) {
+		for (int i = 0; i < 3; i++) {
+			g.drawImage(backgroundImgLayer3, 0 + i * Game.GAME_WIDTH - (int) (xLevelOffset * 0.6), 0, Game.GAME_WIDTH,
+					Game.GAME_HEIGHT, null);
+		}
+
 	}
 
 	@Override

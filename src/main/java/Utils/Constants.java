@@ -4,6 +4,18 @@ import Main.Game;
 
 public class Constants {
 
+	public static class Environment {
+		public static final int BG_LAYER2_WIDTH_DEFAULT = 320;
+		public static final int BG_LAYER2_HEIGHT_DEFAULT = 180;
+		public static final int BG_LAYER2_WIDTH = (int) (BG_LAYER2_WIDTH_DEFAULT * Game.SCALE);
+		public static final int BG_LAYER2_HEIGHT = (int) (BG_LAYER2_HEIGHT_DEFAULT * Game.SCALE);
+
+		public static final int BG_LAYER3_WIDTH_DEFAULT = 320;
+		public static final int BG_LAYER3_HEIGHT_DEFAULT = 180;
+		public static final int BG_LAYER3_WIDTH = (int) (BG_LAYER3_WIDTH_DEFAULT * Game.SCALE);
+		public static final int BG_LAYER3_HEIGHT = (int) (BG_LAYER3_HEIGHT_DEFAULT * Game.SCALE);
+	}
+
 	public static class UI {
 		public static class Buttons {
 			public static final int B_WIDTH_DEFAULT = 140;
