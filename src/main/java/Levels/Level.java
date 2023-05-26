@@ -2,10 +2,17 @@ package Levels;
 
 public class Level {
 
-	protected int scaleX, scaleY;
+	protected int[][] lvlData;
 
-	public Level(int scaleX, int scaleY) {
-		this.scaleX = scaleX;
-		this.scaleY = scaleY;
+	public Level(int[][] lvlData) {
+		this.lvlData = lvlData;
+	}
+
+	public int getSpriteIndex(int x, int y) {
+		return lvlData[y][x];
+	}
+
+	public int[][] getLevelData() {
+		return lvlData;
 	}
 }

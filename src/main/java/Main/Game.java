@@ -18,9 +18,9 @@ public class Game implements Runnable {
 	private LevelManager levelManager;
 
 	public final static int TILES_DEFAULT_SIZE = 24;
-	public final static float SCALE = 3f;
-	public final static int TILES_IN_WIDTH = 16;
-	public final static int TILES_IN_HEIGHT = 8;
+	public final static float SCALE = 2.5f;
+	public final static int TILES_IN_WIDTH = 20;
+	public final static int TILES_IN_HEIGHT = 12;
 	public final static int TILES_SIZE = (int) (TILES_DEFAULT_SIZE * SCALE);
 	public final static int GAME_WIDTH = TILES_SIZE * TILES_IN_WIDTH;
 	public final static int GAME_HEIGHT = TILES_SIZE * TILES_IN_HEIGHT;
@@ -35,8 +35,9 @@ public class Game implements Runnable {
 	}
 
 	private void initClasses() {
-		player = new Player(200, 200, (int) (56 * SCALE), (int) (56 * SCALE));
 		levelManager = new LevelManager(this);
+		player = new Player(100, 400, (int) (56 * SCALE), (int) (56 * SCALE));
+		player.loadLevelData(levelManager.getCurrentLeve().getLevelData());
 
 	}
 
@@ -51,8 +52,8 @@ public class Game implements Runnable {
 	}
 
 	public void render(Graphics g) {
-		player.render(g);
 		levelManager.draw(g);
+		player.render(g);
 	}
 
 	@Override
