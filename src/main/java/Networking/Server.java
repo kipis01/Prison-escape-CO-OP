@@ -22,7 +22,8 @@ class Server extends Communicator {
             socket.setKeepAlive(true);
             socket.setSoTimeout(500);
             TcpReader = new PacketReader(socket.getInputStream());
-            TcpReader.run();
+            TcpReaderThread = new Thread(TcpReader);
+            TcpReaderThread.start();
             outputStream = socket.getOutputStream();
             objectOutput = new ObjectOutputStream(outputStream);
 
@@ -42,8 +43,8 @@ class Server extends Communicator {
         return false;
     }
 
-    @Override
     protected void performShutdown() {
         try { serverSocket.close(); } catch (Exception ignored) {}
+        super.performShutdown();
     }
 }

@@ -18,6 +18,7 @@ abstract class Communicator implements Runnable {
     protected Integer localPort, remotePort;
     protected InetAddress remoteAddress;
     protected volatile PacketReader TcpReader;
+    protected Thread TcpReaderThread;
     protected volatile OutputStream outputStream;
     protected volatile ObjectOutputStream objectOutput;
     protected volatile Socket socket = new Socket();
@@ -59,15 +60,26 @@ abstract class Communicator implements Runnable {
         active = false;
     }
 
-    public void shutDown(){ this.callForShutdown = true; }
+    public void shutDown() { shutDown(true); }
+    public void shutDown(boolean halting){
+        this.callForShutdown = true;
+        while (halting && status != Constants.Status.Stopped);
+    }
     public void queuePacket(Object packet) { uploadQueue.add(new DataPacket(packet, password)); }
     public Constants.Status getStatus(){ return status; }
+
+
+    public List<DataPacket> getReceivedDataPackets() {
+        return TcpReader.popDataPackets();
+    }
+
     protected abstract boolean establishConnection();
 
     protected void performShutdown() {
-        try { TcpReader.CloseReader(); } catch (Exception ignored) {}
+        try { TcpReader.CloseReader(true); } catch (Exception ignored) {}
         try { outputStream.close(); } catch (Exception ignored) {}
         try { socket.close(); } catch (Exception ignored) {}
+        status = Constants.Status.Stopped;
     }
 
     private void sendHeartbeat() {//TODO:Check if a packet drop warrants a connection restart
@@ -110,7 +122,7 @@ abstract class Communicator implements Runnable {
 
     protected HandshakePacket awaitHandshake(int awaitForInSeconds) {
         List<Object> packets = new LinkedList<>();
-        for (LocalDateTime started = LocalDateTime.now(); LocalDateTime.now().isBefore(started.plusSeconds(awaitForInSeconds)) && packets.size() == 0; packets = TcpReader.get()) {
+        for (LocalDateTime started = LocalDateTime.now(); LocalDateTime.now().isBefore(started.plusSeconds(awaitForInSeconds)) && packets.size() == 0; packets = TcpReader.popNonDataPackets()) {
             try { Thread.sleep(100); } catch (Exception ignored){}
         }
         return (HandshakePacket) packets.stream().filter(p -> p instanceof HandshakePacket).findFirst().orElse(null);

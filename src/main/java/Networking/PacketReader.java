@@ -5,6 +5,7 @@ import Networking.Packets.HandshakePacket;
 import Networking.Packets.HeartbeatPacket;
 import Networking.Packets.PacketFilter;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.SocketTimeoutException;
 import java.util.LinkedList;
@@ -45,6 +46,18 @@ class PacketReader implements Runnable {
     public List<Object> pop() {
         List<Object> list = receivedPackets;
         receivedPackets = new LinkedList<>();
+        return list;
+    }
+
+    public List<DataPacket> popDataPackets() {
+        List<DataPacket> list = receivedPackets.stream().filter(s -> s instanceof DataPacket).map(m -> new DataPacket((DataPacket)m)).toList();
+        receivedPackets = receivedPackets.stream().filter(s -> !(s instanceof DataPacket)).toList();//FIXME:Non-atomic operation
+        return list;
+    }
+
+    public List<Object> popNonDataPackets() {
+        List<Object> list = receivedPackets.stream().filter(s -> !(s instanceof DataPacket)).toList();
+        receivedPackets = receivedPackets.stream().filter(s -> s instanceof DataPacket).toList();//FIXME:Non-atomic operation
         return list;
     }
 

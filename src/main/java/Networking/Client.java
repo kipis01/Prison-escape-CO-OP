@@ -25,7 +25,8 @@ class Client extends Communicator {
             socket.setKeepAlive(true);
             socket.setSoTimeout(500);
             TcpReader = new PacketReader(socket.getInputStream());
-            TcpReader.run();
+            TcpReaderThread = new Thread(TcpReader);
+            TcpReaderThread.start();
             outputStream = socket.getOutputStream();
             objectOutput = new ObjectOutputStream(outputStream);
             localPort = socket.getLocalPort();

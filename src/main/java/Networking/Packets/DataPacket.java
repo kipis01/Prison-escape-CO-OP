@@ -7,4 +7,8 @@ public class DataPacket extends Packet {
         super(password);
         this.data = data;
     }
+
+    public DataPacket(Object packet) {
+        this(((DataPacket) packet).data, ((DataPacket) packet).password);
+    }
 }
