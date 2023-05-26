@@ -15,6 +15,7 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
 import Main.Game;
+import Utils.FlipImage;
 import Utils.LoadSave;
 
 public class Player extends Entity {
@@ -29,6 +30,8 @@ public class Player extends Entity {
 	private int[][] lvlData;
 	private float xDrawOffset = 18 * Game.SCALE;
 	private float yDrawOffset = 24 * Game.SCALE;
+
+	private boolean defaultDirection = true;
 
 	// Jumping / Gravity
 	private float airSpeed = 0f;
@@ -51,8 +54,15 @@ public class Player extends Entity {
 	}
 
 	public void render(Graphics g, int levelOffset) {
-		g.drawImage(animations[playerAction][aniIndex], (int) (hitbox.x - xDrawOffset) - levelOffset,
-				(int) (hitbox.y - yDrawOffset), width, height, null);
+		BufferedImage animation;
+
+		if (!defaultDirection)
+			animation = FlipImage.flipImageHorizontally(animations[playerAction][aniIndex]);
+		else
+			animation = animations[playerAction][aniIndex];
+
+		g.drawImage(animation, (int) (hitbox.x - xDrawOffset) - levelOffset, (int) (hitbox.y - yDrawOffset), width,
+				height, null);
 //		drawHitbox(g);
 
 	}
@@ -140,11 +150,15 @@ public class Player extends Entity {
 
 		float xSpeed = 0;
 
-		if (left)
+		if (left) {
 			xSpeed -= playerSpeed;
+			defaultDirection = false;
+		}
 
-		if (right)
+		if (right) {
 			xSpeed += playerSpeed;
+			defaultDirection = true;
+		}
 
 		if (!inAir)
 			if (!IsEntityOnFloor(hitbox, lvlData))
