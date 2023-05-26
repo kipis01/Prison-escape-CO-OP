@@ -1,38 +1,39 @@
 package Networking;
 
 import Networking.Packets.HandshakePacket;
-import java.io.*;
+
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
 
-class Server extends Communicator {
-    private ServerSocket serverSocket = null;
-
-    public Server (int localPort, String password) {
-        super(localPort, password);
+class Client extends Communicator {
+    public Client (InetAddress serverAddress, int serverPort, String password){
+        super(password);
+        remoteAddress = serverAddress;
+        remotePort = serverPort;
     }
 
     @Override
     protected boolean establishConnection() {
         try {
-            if (serverSocket == null) {
-                serverSocket = new ServerSocket(localPort);
-                serverSocket.setSoTimeout(2000);
-            }
-            socket = serverSocket.accept();
+            socket = new Socket(remoteAddress, remotePort);
             socket.setKeepAlive(true);
             socket.setSoTimeout(500);
             TcpReader = new PacketReader(socket.getInputStream());
             TcpReader.run();
             outputStream = socket.getOutputStream();
             objectOutput = new ObjectOutputStream(outputStream);
+            localPort = socket.getLocalPort();
 
             sendSinglePacket(new HandshakePacket(password, localPort));
 
             HandshakePacket hPacket = awaitHandshake(5);
             if (hPacket != null) {
-                objectOutput.writeObject(new HandshakePacket(password, localPort));//Accepts
-                remoteAddress = socket.getInetAddress();
-                remotePort = socket.getPort();
                 status = Constants.Status.Connected;
                 return true;
             }
@@ -40,10 +41,5 @@ class Server extends Communicator {
 
         initiateDisconnect();
         return false;
-    }
-
-    @Override
-    protected void performShutdown() {
-        try { serverSocket.close(); } catch (Exception ignored) {}
     }
 }
