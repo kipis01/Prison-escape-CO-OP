@@ -7,11 +7,14 @@ import java.awt.event.MouseEvent;
 import Entities.Player;
 import Levels.LevelManager;
 import Main.Game;
+import Ui.PauseOverlay;
 
 public class Playing extends State implements Statemethods {
 	private Player player;
 
 	private LevelManager levelManager;
+	private boolean paused = false;
+	private PauseOverlay pauseOverlay;
 
 	public Playing(Game game) {
 		super(game);
@@ -23,7 +26,7 @@ public class Playing extends State implements Statemethods {
 		player = new Player(100, 100, (int) (56 * game.SCALE), (int) (56 * game.SCALE));
 
 		player.loadLevelData(levelManager.getCurrentLeve().getLevelData());
-
+		pauseOverlay = new PauseOverlay(this);
 	}
 
 	public void windowFocusLost() {
@@ -32,14 +35,21 @@ public class Playing extends State implements Statemethods {
 
 	@Override
 	public void update() {
-		levelManager.update();
-		player.update();
+		if (!paused) {
+			levelManager.update();
+			player.update();
+		} else {
+			pauseOverlay.update();
+		}
 	}
 
 	@Override
 	public void draw(Graphics g) {
 		levelManager.draw(g);
 		player.render(g);
+
+		if (paused)
+			pauseOverlay.draw(g);
 	}
 
 	@Override
@@ -51,19 +61,22 @@ public class Playing extends State implements Statemethods {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
+		if (paused)
+			pauseOverlay.mousePressed(e);
 
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
+		if (paused)
+			pauseOverlay.mouseReleased(e);
 
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		// TODO Auto-generated method stub
+		if (paused)
+			pauseOverlay.mouseMoved(e);
 
 	}
 
@@ -79,8 +92,8 @@ public class Playing extends State implements Statemethods {
 		case KeyEvent.VK_SPACE:
 			player.setJump(true);
 			break;
-		case KeyEvent.VK_BACK_SPACE:
-			GameState.state = GameState.MENU;
+		case KeyEvent.VK_ESCAPE:
+			paused = !paused;
 			break;
 		}
 	}
@@ -100,6 +113,10 @@ public class Playing extends State implements Statemethods {
 
 		}
 
+	}
+
+	public void unpauseGame() {
+		paused = false;
 	}
 
 	public Player getPlayer() {
