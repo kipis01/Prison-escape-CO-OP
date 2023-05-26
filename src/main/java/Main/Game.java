@@ -2,8 +2,9 @@ package Main;
 
 import java.awt.Graphics;
 
-import Entities.Player;
-import Levels.LevelManager;
+import GameStates.GameState;
+import GameStates.Menu;
+import GameStates.Playing;
 
 public class Game implements Runnable {
 
@@ -13,14 +14,13 @@ public class Game implements Runnable {
 	private final int FPS_SET = 120;
 	private final int UPS_SET = 200;
 
-	private Player player;
-
-	private LevelManager levelManager;
+	private Playing playing;
+	private Menu menu;
 
 	public final static int TILES_DEFAULT_SIZE = 24;
 	public final static float SCALE = 2.5f;
-	public final static int TILES_IN_WIDTH = 20;
-	public final static int TILES_IN_HEIGHT = 12;
+	public final static int TILES_IN_WIDTH = 26;
+	public final static int TILES_IN_HEIGHT = 14;
 	public final static int TILES_SIZE = (int) (TILES_DEFAULT_SIZE * SCALE);
 	public final static int GAME_WIDTH = TILES_SIZE * TILES_IN_WIDTH;
 	public final static int GAME_HEIGHT = TILES_SIZE * TILES_IN_HEIGHT;
@@ -35,10 +35,8 @@ public class Game implements Runnable {
 	}
 
 	private void initClasses() {
-		levelManager = new LevelManager(this);
-		player = new Player(100, 400, (int) (56 * SCALE), (int) (56 * SCALE));
-		player.loadLevelData(levelManager.getCurrentLeve().getLevelData());
-
+		menu = new Menu(this);
+		playing = new Playing(this);
 	}
 
 	private void startGameLoop() {
@@ -47,13 +45,33 @@ public class Game implements Runnable {
 	}
 
 	private void update() {
-		player.update();
-		levelManager.update();
+		switch (GameState.state) {
+		case MENU:
+			menu.update();
+			break;
+		case PLAYING:
+			playing.update();
+			break;
+		case OPTIONS:
+		case QUIT:
+			System.exit(0);
+			break;
+		default:
+			break;
+		}
 	}
 
 	public void render(Graphics g) {
-		levelManager.draw(g);
-		player.render(g);
+		switch (GameState.state) {
+		case MENU:
+			menu.draw(g);
+			break;
+		case PLAYING:
+			playing.draw(g);
+			break;
+		default:
+			break;
+		}
 	}
 
 	@Override
@@ -102,10 +120,15 @@ public class Game implements Runnable {
 	}
 
 	public void windowFocusLost() {
-		player.resetDirBooleans();
+		if (GameState.state == GameState.PLAYING)
+			playing.getPlayer().resetDirBooleans();
 	}
 
-	public Player getPlayer() {
-		return player;
+	public Menu getMenu() {
+		return menu;
+	}
+
+	public Playing getPlaying() {
+		return playing;
 	}
 }
