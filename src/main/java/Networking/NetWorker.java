@@ -43,7 +43,7 @@ public class NetWorker {
      * Stops the server
      * @param halting If true, waits for the server to shut down, otherwise shutdown is performed in background and serverStatus needs to be polled to ensure graceful shutdown
      */
-    public void stopNetWorker(boolean halting) {//FIXME:Halts on initialized, never run
+    public void stopNetWorker(boolean halting) {
         communicator.shutDown(halting);
     }
 

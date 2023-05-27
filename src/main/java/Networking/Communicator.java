@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -83,7 +84,7 @@ abstract class Communicator implements Runnable {
         status = Constants.Status.Stopped;
     }
 
-    private void sendHeartbeat() {//TODO:Check if a packet drop warrants a connection restart
+    private void sendHeartbeat() {
         if (!sendSinglePacket(new HeartbeatPacket(password, true)))
             initiateDisconnect();
     }
@@ -93,9 +94,7 @@ abstract class Communicator implements Runnable {
             objectOutput.writeObject(packet);
             lastSuccessfulSend = LocalDateTime.now();
             return true;
-        } catch (IOException e) {
-            e.printStackTrace();//TODO:Silence the output
-        }
+        } catch (Exception e) { e.printStackTrace(); }
         return false;
     }
 
@@ -105,8 +104,9 @@ abstract class Communicator implements Runnable {
             try {
                 objectOutput.writeObject(packetsToSend.peek());
                 packetsToSend.poll();
+                uploadQueue.poll();//TODO:A bit of a dirty solution
             } catch (IOException e) {
-                e.printStackTrace();//TODO:Remove
+                //e.printStackTrace();
                 initiateDisconnect();
                 break;
             }

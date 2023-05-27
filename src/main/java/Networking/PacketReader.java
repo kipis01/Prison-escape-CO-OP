@@ -72,14 +72,12 @@ class PacketReader implements Runnable {
                 if (!(receivedPacket instanceof HeartbeatPacket))
                     receivedPackets.add(receivedPacket);
             } catch (EOFException e){
-                System.out.println("EOF on server input");//TODO:Test
-                CloseReader();
+                CloseReader();//TODO:Account for this
             } catch (IOException e) {
                 if (e instanceof SocketTimeoutException)
                     continue;
-                e.printStackTrace();
-                //TODO:Read needs to be reacquired probably
-            } catch (ClassNotFoundException ignored) { ignored.printStackTrace(); }//TODO:Ignore
+                //e.printStackTrace(); //TODO:Handle this if needed
+            } catch (ClassNotFoundException ignored) {}
         }
         try {
             objectInput.close();
