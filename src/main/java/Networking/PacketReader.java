@@ -72,7 +72,7 @@ class PacketReader implements Runnable {
                 if (!(receivedPacket instanceof HeartbeatPacket))
                     receivedPackets.add(receivedPacket);
             } catch (EOFException e){
-                CloseReader();//TODO:Account for this
+                CloseReader(false);//TODO:Account for this in Communicator
             } catch (IOException e) {
                 if (e instanceof SocketTimeoutException)
                     continue;

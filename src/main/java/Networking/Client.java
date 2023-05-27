@@ -38,7 +38,7 @@ class Client extends Communicator {
                 status = Constants.Status.Connected;
                 return true;
             }
-        } catch (Exception ignored) { ignored.printStackTrace(); }
+        } catch (Exception ignored) {}
 
         initiateDisconnect();
         return false;

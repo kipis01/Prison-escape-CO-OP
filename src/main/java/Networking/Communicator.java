@@ -94,7 +94,7 @@ abstract class Communicator implements Runnable {
             objectOutput.writeObject(packet);
             lastSuccessfulSend = LocalDateTime.now();
             return true;
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception ignored) {}
         return false;
     }
 
