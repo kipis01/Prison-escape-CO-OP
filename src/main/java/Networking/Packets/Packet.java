@@ -1,6 +1,8 @@
 package Networking.Packets;
 
-public class Packet {
+import java.io.Serializable;
+
+public class Packet implements Serializable {
     public String password = "";
 
     public Packet(String password) {

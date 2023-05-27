@@ -20,12 +20,12 @@ class Server extends Communicator {
             }
             socket = serverSocket.accept();
             socket.setKeepAlive(true);
-            socket.setSoTimeout(500);
+            socket.setSoTimeout(1000);
+            outputStream = socket.getOutputStream();
+            objectOutput = new ObjectOutputStream(outputStream);
             TcpReader = new PacketReader(socket.getInputStream());
             TcpReaderThread = new Thread(TcpReader);
             TcpReaderThread.start();
-            outputStream = socket.getOutputStream();
-            objectOutput = new ObjectOutputStream(outputStream);
 
             sendSinglePacket(new HandshakePacket(password, localPort));
 
@@ -37,7 +37,7 @@ class Server extends Communicator {
                 status = Constants.Status.Connected;
                 return true;
             }
-        } catch (Exception ignored) {  }
+        } catch (Exception ignored) { ignored.printStackTrace(); }
 
         initiateDisconnect();
         return false;

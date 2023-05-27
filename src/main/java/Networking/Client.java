@@ -24,11 +24,11 @@ class Client extends Communicator {
             socket = new Socket(remoteAddress, remotePort);
             socket.setKeepAlive(true);
             socket.setSoTimeout(500);
+            outputStream = socket.getOutputStream();
+            objectOutput = new ObjectOutputStream(outputStream);
             TcpReader = new PacketReader(socket.getInputStream());
             TcpReaderThread = new Thread(TcpReader);
             TcpReaderThread.start();
-            outputStream = socket.getOutputStream();
-            objectOutput = new ObjectOutputStream(outputStream);
             localPort = socket.getLocalPort();
 
             sendSinglePacket(new HandshakePacket(password, localPort));
@@ -38,7 +38,7 @@ class Client extends Communicator {
                 status = Constants.Status.Connected;
                 return true;
             }
-        } catch (Exception ignored) {  }
+        } catch (Exception ignored) { ignored.printStackTrace(); }
 
         initiateDisconnect();
         return false;

@@ -7,6 +7,9 @@ import java.io.*;
 import java.net.InetAddress;
 import java.util.List;
 
+import java.net.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 public class PrisonEscape {
     public static void main(String[] args) throws IOException {
         System.out.println("Starting...");
@@ -36,8 +39,8 @@ public class PrisonEscape {
                     net.SendPacket(command);
                     break;
                 case "ListReceived":
-                    List<DataPacket> received = net.getReceivedPackets();
-                    for(DataPacket packet : received){
+                    ConcurrentLinkedQueue<DataPacket> received = net.getReceivedPackets();
+                    for(DataPacket packet = received.poll(); packet != null; packet = received.poll()){
                         System.out.println(packet.data);
                     }
                     break;

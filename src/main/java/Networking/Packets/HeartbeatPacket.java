@@ -1,6 +1,8 @@
 package Networking.Packets;
 
-public class HeartbeatPacket extends Packet {
+import java.io.Serializable;
+
+public class HeartbeatPacket extends Packet implements Serializable {
     public boolean respond = true;
 
     public HeartbeatPacket(String password, boolean respond) {

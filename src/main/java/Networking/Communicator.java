@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 abstract class Communicator implements Runnable {
     protected Integer localPort, remotePort;
@@ -69,7 +70,7 @@ abstract class Communicator implements Runnable {
     public Constants.Status getStatus(){ return status; }
 
 
-    public List<DataPacket> getReceivedDataPackets() {
+    public ConcurrentLinkedQueue<DataPacket> getReceivedDataPackets() {
         return TcpReader.popDataPackets();
     }
 
@@ -115,13 +116,14 @@ abstract class Communicator implements Runnable {
     protected void initiateDisconnect() {
         try { objectOutput.close(); } catch (Exception ignored){} finally { objectOutput = null; }
         try { outputStream.close(); } catch (Exception ignored){} finally { outputStream = null; }
-        try { TcpReader.CloseReader(true); } catch (Exception ignored){} finally { TcpReader = null; }
+        try { TcpReader.CloseReader(true); } catch (Exception ignored){}
+        try { TcpReaderThread.join(); } catch (Exception ignored){} finally { TcpReader = null; TcpReaderThread = null; }
         try { socket.close(); } catch (Exception ignored){} finally { socket = null; }
         status = Constants.Status.Disconnected;
     }
 
     protected HandshakePacket awaitHandshake(int awaitForInSeconds) {
-        List<Object> packets = new LinkedList<>();
+        ConcurrentLinkedQueue<Object> packets = new ConcurrentLinkedQueue<>();
         for (LocalDateTime started = LocalDateTime.now(); LocalDateTime.now().isBefore(started.plusSeconds(awaitForInSeconds)) && packets.size() == 0; packets = TcpReader.popNonDataPackets()) {
             try { Thread.sleep(100); } catch (Exception ignored){}
         }

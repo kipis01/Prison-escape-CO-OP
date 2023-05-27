@@ -1,6 +1,8 @@
 package Networking.Packets;
 
-public class DataPacket extends Packet {
+import java.io.Serializable;
+
+public class DataPacket extends Packet implements Serializable {
     public Object data;
 
     public DataPacket(Object data, String password){

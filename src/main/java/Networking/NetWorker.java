@@ -4,6 +4,7 @@ import Networking.Packets.DataPacket;
 
 import java.net.InetAddress;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NetWorker {
     private Communicator communicator;
@@ -51,6 +52,6 @@ public class NetWorker {
      * @param packet the object that needs to be sent
      */
     public void SendPacket(Object packet) { communicator.queuePacket(packet); }
-    public List<DataPacket> getReceivedPackets() { return communicator.getReceivedDataPackets(); }
+    public ConcurrentLinkedQueue<DataPacket> getReceivedPackets() { return communicator.getReceivedDataPackets(); }
     public Constants.Status getStatus(){ return communicator.getStatus(); }
 }

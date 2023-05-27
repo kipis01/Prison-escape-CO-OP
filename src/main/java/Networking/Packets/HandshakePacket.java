@@ -1,6 +1,8 @@
 package Networking.Packets;
 
-public class HandshakePacket extends Packet {
+import java.io.Serializable;
+
+public class HandshakePacket extends Packet implements Serializable {
     public int clientPort;
 
     public HandshakePacket(String password, int clientPort) {

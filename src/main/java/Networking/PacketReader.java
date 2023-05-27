@@ -10,18 +10,19 @@ import java.io.*;
 import java.net.SocketTimeoutException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 class PacketReader implements Runnable {
     private ObjectInputStream objectInput = null;
     private InputStream inputStream = null;
-    private volatile List<Object> receivedPackets;
+    private volatile ConcurrentLinkedQueue<Object> receivedPackets;
     private volatile boolean read = true, isRunning = false;
 
     public PacketReader(InputStream inputStream) throws IOException {
         this.inputStream = inputStream;
         objectInput = new ObjectInputStream(this.inputStream);
-        objectInput.setObjectInputFilter(new PacketFilter());
-        receivedPackets = new LinkedList<>();
+        //objectInput.setObjectInputFilter(new PacketFilter());//FIXME
+        receivedPackets = new ConcurrentLinkedQueue<>();
     }
 
     public void CloseReader(){ CloseReader(true); }
@@ -41,23 +42,23 @@ class PacketReader implements Runnable {
     }
 
     public boolean isRunning(){ return isRunning; }
-    public List<Object> get() { return receivedPackets; }
+    public ConcurrentLinkedQueue<Object> get() { return receivedPackets; }
 
-    public List<Object> pop() {
-        List<Object> list = receivedPackets;
-        receivedPackets = new LinkedList<>();
+    public ConcurrentLinkedQueue<Object> pop() {
+        ConcurrentLinkedQueue<Object> list = receivedPackets;
+        receivedPackets = new ConcurrentLinkedQueue<>();
         return list;
     }
 
-    public List<DataPacket> popDataPackets() {
-        List<DataPacket> list = receivedPackets.stream().filter(s -> s instanceof DataPacket).map(m -> new DataPacket((DataPacket)m)).toList();
-        receivedPackets = receivedPackets.stream().filter(s -> !(s instanceof DataPacket)).toList();//FIXME:Non-atomic operation
+    public ConcurrentLinkedQueue<DataPacket> popDataPackets() {
+        ConcurrentLinkedQueue<DataPacket> list = new ConcurrentLinkedQueue<>(receivedPackets.stream().filter(s -> s instanceof DataPacket).map(m -> new DataPacket((DataPacket)m)).toList());
+        receivedPackets = new ConcurrentLinkedQueue<>(receivedPackets.stream().filter(s -> !(s instanceof DataPacket)).toList());//FIXME:Non-atomic operation
         return list;
     }
 
-    public List<Object> popNonDataPackets() {
-        List<Object> list = receivedPackets.stream().filter(s -> !(s instanceof DataPacket)).toList();
-        receivedPackets = receivedPackets.stream().filter(s -> s instanceof DataPacket).toList();//FIXME:Non-atomic operation
+    public ConcurrentLinkedQueue<Object> popNonDataPackets() {
+        ConcurrentLinkedQueue<Object> list = new ConcurrentLinkedQueue<>(receivedPackets.stream().filter(s -> !(s instanceof DataPacket)).toList());
+        receivedPackets = new ConcurrentLinkedQueue<>(receivedPackets.stream().filter(s -> s instanceof DataPacket).toList());//FIXME:Non-atomic operation
         return list;
     }
 
