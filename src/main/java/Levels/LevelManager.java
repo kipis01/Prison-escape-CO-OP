@@ -1,10 +1,10 @@
 package Levels;
 
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-
 import Main.Game;
 import Utils.LoadSave;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class LevelManager {
 
@@ -47,4 +47,5 @@ public class LevelManager {
 	public Level getCurrentLeve() {
 		return levelOne;
 	}
+
 }

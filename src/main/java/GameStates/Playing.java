@@ -1,16 +1,18 @@
 package GameStates;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-
+import Entities.NPC.PrisonGuard;
 import Entities.Player;
 import Levels.LevelManager;
 import Main.Game;
 import Ui.PauseOverlay;
 import Utils.LoadSave;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Playing extends State implements Statemethods {
 	private Player player;
@@ -25,6 +27,7 @@ public class Playing extends State implements Statemethods {
 	private int lvlTilesWide = LoadSave.GetLevelData()[0].length;
 	private int maxTilesOffset = lvlTilesWide - Game.TILES_IN_WIDTH;
 	private int maxLevelOffsetX = maxTilesOffset * Game.TILES_SIZE;
+	private List<PrisonGuard> prisonGuards;
 
 	private BufferedImage backgroundImg, backgroundImgLayer2, backgroundImgLayer3;
 
@@ -38,27 +41,55 @@ public class Playing extends State implements Statemethods {
 	}
 
 	private void initClasses() {
-		levelManager = new LevelManager(game);
-		player = new Player(100, 100, (int) (56 * game.SCALE), (int) (56 * game.SCALE));
+			levelManager = new LevelManager(game);
+			player = new Player(100, 100, (int) (56 * game.SCALE), (int) (56 * game.SCALE), levelManager);
+			// ...
+
+			// Initialize the PrisonGuard instance
 
 		player.loadLevelData(levelManager.getCurrentLeve().getLevelData());
+		prisonGuards = new ArrayList<>();
 		pauseOverlay = new PauseOverlay(this);
+		spawnPrisonGuards();
 	}
 
 	public void windowFocusLost() {
 		player.resetDirBooleans();
 	}
+	private void spawnPrisonGuards() {
+		// Create and add PrisonGuard objects to the list
+		PrisonGuard guard1 = new PrisonGuard(200, 200, 32, 64, 1); // Type 1 movement
 
+		guard1.setLevelManager(levelManager); // Assign the levelManager
+		prisonGuards.add(guard1);
+
+		PrisonGuard guard2 = new PrisonGuard(300, 400, 32, 64, 2); // Type 2 movement
+		guard2.setLevelManager(levelManager); // Assign the levelManager
+		prisonGuards.add(guard2);
+
+		// Assign the levelManager to all remaining PrisonGuard instances
+		for (PrisonGuard guard : prisonGuards) {
+			guard.setLevelManager(levelManager);
+		}
+	}
 	@Override
 	public void update() {
 		if (!paused) {
 			levelManager.update();
 			player.update();
+
+			for (PrisonGuard guard : prisonGuards) {
+				guard.update();
+				guard.checkTileCollision(levelManager.getCurrentLeve().getLevelData());
+			}
+
+
 			checkCloseToBorder();
 		} else {
 			pauseOverlay.update();
 		}
 	}
+
 
 	private void checkCloseToBorder() {
 		int playerX = (int) player.getHitbox().x;
@@ -82,7 +113,16 @@ public class Playing extends State implements Statemethods {
 		drawLayer3(g);
 
 		levelManager.draw(g, xLevelOffset);
+
+		// Render the player
 		player.render(g, xLevelOffset);
+		// Render the PrisonGuard
+		// Render the PrisonGuard
+		for (PrisonGuard guard : prisonGuards) {
+			guard.render(g, xLevelOffset);
+		}
+
+
 
 		if (paused) {
 			g.setColor(new Color(0, 0, 0, 150));
@@ -90,6 +130,8 @@ public class Playing extends State implements Statemethods {
 			pauseOverlay.draw(g);
 		}
 	}
+
+
 
 	private void drawLayer2(Graphics g) {
 		for (int i = 0; i < 3; i++) {

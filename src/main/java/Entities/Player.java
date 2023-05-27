@@ -1,22 +1,16 @@
 package Entities;
 
-import static Utils.Constants.PlayerConstants.ATTACK;
-import static Utils.Constants.PlayerConstants.FALL;
-import static Utils.Constants.PlayerConstants.GetSpriteAmount;
-import static Utils.Constants.PlayerConstants.IDLE;
-import static Utils.Constants.PlayerConstants.JUMP;
-import static Utils.Constants.PlayerConstants.RUN;
-import static Utils.HelpMethods.CanMoveHere;
-import static Utils.HelpMethods.GetEntityXPosNextToWall;
-import static Utils.HelpMethods.GetEntityYPosUnderRoofOrAboveFloor;
-import static Utils.HelpMethods.IsEntityOnFloor;
-
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-
+import Entities.NPC.PrisonGuard;
+import Levels.LevelManager;
 import Main.Game;
 import Utils.FlipImage;
 import Utils.LoadSave;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+
+import static Utils.Constants.PlayerConstants.*;
+import static Utils.HelpMethods.*;
 
 public class Player extends Entity {
 
@@ -39,19 +33,34 @@ public class Player extends Entity {
 	private float jumpSpeed = -2f * Game.SCALE;
 	private float fallSpeedAfterCollision = 0.5f * Game.SCALE;
 	private boolean inAir = true;
+	private int health; // Player's health
 
-	public Player(float x, float y, int width, int height) {
+	private LevelManager levelManager;
+	private PrisonGuard guard;
+	public Player(float x, float y, int width, int height, LevelManager levelManager) {
 		super(x, y, width, height);
 		loadAnimations();
 		initHitbox(x, y, 18 * Game.SCALE, (int) 31 * Game.SCALE);
-		// TODO Auto-generated constructor stub
+		this.health = 100; // Initialize health to 100
+		this.levelManager = levelManager; // Set the levelManager instance
 	}
+
+
 
 	public void update() {
 		updatePos();
 		updateAnimationTick();
 		setAnimation();
+		if (attacking && guard != null && guard.isHit(hitbox)) {
+			guard.takeDamage(10); // Inflict 10 damage on the guard
+		}
+		if (guard != null && hitbox.intersects(guard.getHitbox())) {
+			System.out.println("Player collided with PrisonGuard!");
+			// Perform actions when player collides with the guard
+		}
 	}
+
+
 
 	public void render(Graphics g, int levelOffset) {
 		BufferedImage animation;
@@ -63,10 +72,18 @@ public class Player extends Entity {
 
 		g.drawImage(animation, (int) (hitbox.x - xDrawOffset) - levelOffset, (int) (hitbox.y - yDrawOffset), width,
 				height, null);
-//		drawHitbox(g);
+		drawHitbox(g);
 
 	}
-
+	public void takeDamage() {
+		health -= 10; // Reduce health by 10 when taking damage
+		System.out.println("Player took damage. Current health: " + health);
+		if (health <= 0) {
+			// Player is defeated
+			System.out.println("Player is defeated. Game over!");
+			// Implement game over logic here
+		}
+	}
 	private void loadAnimations() {
 
 		BufferedImage img = LoadSave.GetSpriteAtlas(LoadSave.PLAYER_ATLAS);
@@ -107,7 +124,9 @@ public class Player extends Entity {
 		}
 
 	}
-
+	public void setGuard(PrisonGuard guard) {
+		this.guard = guard;
+	}
 	private void setAnimation() {
 		int startAni = playerAction;
 
@@ -239,6 +258,13 @@ public class Player extends Entity {
 
 	public void setJump(boolean jump) {
 		this.jump = jump;
+	}
+	public float getX() {
+		return x;
+	}
+
+	public float getY() {
+		return y;
 	}
 
 }

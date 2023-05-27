@@ -10,11 +10,12 @@ public abstract class Entity {
 	protected int width, height;
 	protected Rectangle2D.Float hitbox;
 
-	public Entity(float x, float y, int scaleX, int scaleY) {
+	public Entity(float x, float y, int width, int height) {
 		this.x = x;
 		this.y = y;
-		this.width = scaleX;
-		this.height = scaleY;
+		this.width = width;
+		this.height = height;
+		initHitbox(x, y, width, height); // Initialize the hitbox
 	}
 
 	protected void drawHitbox(Graphics g) {
@@ -25,16 +26,16 @@ public abstract class Entity {
 
 	protected void initHitbox(float x, float y, float width, float height) {
 		hitbox = new Rectangle2D.Float(x, y, width, height);
-
 	}
 
-//	protected void updateHitbox() {
-//		hitbox.x = (int) x;
-//		hitbox.y = (int) y;
-//	}
+	protected void updateHitbox() {
+		hitbox.x = x;
+		hitbox.y = y;
+		hitbox.width = width;
+		hitbox.height = height;
+	}
 
 	public Rectangle2D.Float getHitbox() {
 		return hitbox;
 	}
-
 }
