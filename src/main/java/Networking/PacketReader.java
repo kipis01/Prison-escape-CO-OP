@@ -77,7 +77,8 @@ class PacketReader implements Runnable {
                 if (e instanceof SocketTimeoutException)
                     continue;
                 //e.printStackTrace(); //TODO:Handle this if needed
-            } catch (ClassNotFoundException ignored) {}
+            } catch (ClassNotFoundException ignored) {
+            } catch (Exception ignored) {}
         }
         try {
             objectInput.close();

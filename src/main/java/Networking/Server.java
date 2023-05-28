@@ -3,6 +3,7 @@ package Networking;
 import Networking.Packets.HandshakePacket;
 import java.io.*;
 import java.net.ServerSocket;
+import java.util.Objects;
 
 class Server extends Communicator {
     private ServerSocket serverSocket = null;
@@ -27,10 +28,9 @@ class Server extends Communicator {
             TcpReaderThread = new Thread(TcpReader);
             TcpReaderThread.start();
 
-            sendSinglePacket(new HandshakePacket(password, localPort));
-
             HandshakePacket hPacket = awaitHandshake(5);
-            if (hPacket != null) {
+            if (hPacket != null && Objects.equals(hPacket.password, password)) {
+                sendSinglePacket(new HandshakePacket(password, localPort));
                 objectOutput.writeObject(new HandshakePacket(password, localPort));//Accepts
                 remoteAddress = socket.getInetAddress();
                 remotePort = socket.getPort();

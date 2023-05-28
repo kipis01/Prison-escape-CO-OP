@@ -43,6 +43,7 @@ abstract class Communicator implements Runnable {
     @Override
     public void run() {
         active = true;
+        status = Constants.Status.Disconnected;
         while (!callForShutdown){
             try {
                 if (status != Constants.Status.Connected)
@@ -71,8 +72,10 @@ abstract class Communicator implements Runnable {
     public Constants.Status getStatus(){ return status; }
 
 
-    public ConcurrentLinkedQueue<DataPacket> getReceivedDataPackets() {
-        return TcpReader.popDataPackets();
+    public List<Object> getReceivedDataPackets() {
+        if (TcpReader == null)
+            return new LinkedList<>();
+        return TcpReader.popDataPackets().stream().map(s -> s.data).toList();
     }
 
     protected abstract boolean establishConnection();

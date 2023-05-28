@@ -52,6 +52,6 @@ public class NetWorker {
      * @param packet the object that needs to be sent
      */
     public void SendPacket(Object packet) { communicator.queuePacket(packet); }
-    public ConcurrentLinkedQueue<DataPacket> getReceivedPackets() { return communicator.getReceivedDataPackets(); }
+    public List<Object> getReceivedPackets() { return communicator.getReceivedDataPackets(); }
     public Constants.Status getStatus(){ return communicator.getStatus(); }
 }
