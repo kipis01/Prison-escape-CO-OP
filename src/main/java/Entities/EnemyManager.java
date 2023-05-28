@@ -1,12 +1,7 @@
 package Entities;
 
 import static Utils.Constants.Directions.RIGHT;
-import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_DRAWOFFSET_X;
-import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_DRAWOFFSET_Y;
-import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_HEIGHT;
-import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_HEIGHT_DEFAULT;
-import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_WIDTH;
-import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_WIDTH_DEFAULT;
+import static Utils.Constants.EnemyConstants.*;
 
 import java.awt.Color;
 import java.awt.Graphics;

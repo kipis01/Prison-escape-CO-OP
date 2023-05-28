@@ -147,7 +147,7 @@ public class Player extends Entity {
 		playerData.xLoc = xLoc;
 		playerData.yLoc = yLoc;
 		playerData.playerId = playerId;
-		playerData.playerAction = playerAction;
+		playerData.playerAction = state;
 		playerData.aniIndex = aniIndex;
 		playerData.defaultDirection = defaultDirection;
 
@@ -177,16 +177,16 @@ public class Player extends Entity {
 		g.drawImage(animation, playerData.xLoc, playerData.yLoc, width, height, null);
 	}
 
-	private void drawAttackBox(Graphics g, int levelOffsetX) {
+	protected void drawAttackBox(Graphics g, int levelOffsetX) {
 		g.setColor(Color.red);
 		g.drawRect((int) attackBox.x - levelOffsetX, (int) attackBox.y, (int) attackBox.width, (int) attackBox.height);
 	}
 
 	private void drawUi(Graphics g) {
 		g.setColor(Color.gray);
-		g.fillRect(28, 28, healthBarLevelWidth + 4, healthBarLevelHeight + 4);
+		g.fillRect(28, 28, healthBarLevelWidth + 4, 9);
 		g.setColor(Color.red);
-		g.fillRect(30, 30, healthWidth, healthBarLevelHeight);
+		g.fillRect(30, 30, healthWidth, 5);
 
 		// TODO: Implement health change with the images
 //		BufferedImage croppedImage = healthBarLevel.getSubimage(0, 0, healthBarLevelWidth - healthWidth, healthBarLevelHeight);
