@@ -143,7 +143,7 @@ public class Player extends Entity {
 
 		g.drawImage(animation, xLoc, yLoc, width, height, null);
 
-		playerData.xLoc = xLoc - levelOffset;
+		playerData.xLoc = xLoc + levelOffset;
 		playerData.yLoc = yLoc;
 		playerData.playerId = playerId;
 		playerData.playerAction = state;

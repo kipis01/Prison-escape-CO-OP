@@ -1,7 +1,14 @@
 package Entities;
 
 import static Utils.Constants.Directions.RIGHT;
-import static Utils.Constants.EnemyConstants.*;
+import static Utils.Constants.EnemyConstants.GetMaxHealth;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_DRAWOFFSET_X;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_DRAWOFFSET_Y;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_HEIGHT;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_HEIGHT_DEFAULT;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_WIDTH;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_WIDTH_DEFAULT;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -55,7 +62,7 @@ public class EnemyManager {
 			else
 				animation = lightBanditArr[npc.enemyState][npc.aniIndex];
 
-			g.drawImage(animation, npc.xLoc, npc.yLoc, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
+			g.drawImage(animation, npc.xLoc - xLevelOffset, npc.yLoc, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
 
 			g.setColor(Color.RED);
 
@@ -66,8 +73,8 @@ public class EnemyManager {
 	public void checkEnemyHit(Rectangle2D.Float attackBox) {
 		for (LightBandit lb : lbandits)
 			if (lb.isActive()) {
-				if(attackBox.intersects(lb.getHitbox())) {
-					lb.hurt(50); //player damage
+				if (attackBox.intersects(lb.getHitbox())) {
+					lb.hurt(50); // player damage
 					return;
 				}
 			}
@@ -81,21 +88,22 @@ public class EnemyManager {
 				if (lb.getWalkDir() == RIGHT)
 					animation = FlipImage.flipImageHorizontally(lightBanditArr[lb.getEnemyState()][lb.getAniIndex()]);
 				else
-					animation = lightBanditArr[lb.getEnemyState()][lb.getAniIndex()];;
-				
+					animation = lightBanditArr[lb.getEnemyState()][lb.getAniIndex()];
+				;
+
 				lb.drawHealthbar(g, xLevelOffset, healthWidth);
-				
-				// Debugging			
+
+				// Debugging
 //				lb.drawHitbox(g, xLevelOffset);
 //				lb.drawAttackBox(g, xLevelOffset);
-        
+
 				int xLoc = (int) lb.getHitbox().x - LIGHT_BANDIT_DRAWOFFSET_X - xLevelOffset;
 				int yLoc = (int) lb.getHitbox().y - LIGHT_BANDIT_DRAWOFFSET_Y;
 
 				g.drawImage(animation, xLoc, yLoc, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
 
 				NpcData npc = new NpcData();
-				npc.xLoc = xLoc;
+				npc.xLoc = xLoc + xLevelOffset;
 				npc.yLoc = yLoc;
 				npc.enemyState = lb.getEnemyState();
 				npc.aniIndex = lb.getAniIndex();

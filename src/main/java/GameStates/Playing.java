@@ -193,7 +193,7 @@ public class Playing extends State implements Statemethods {
 						tmPlayerData = playerTwoData = (PlayerData) packet;
 						if (playerTwoData.playerId != playerId)
 							isPlayerTwoConnected = true;
-						player.renderPlayerTwo(g, maxLevelOffsetX, playerTwoData);
+						player.renderPlayerTwo(g, xLevelOffset, playerTwoData);
 
 					}
 					if (packet instanceof NpcData) {
