@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 abstract class Communicator implements Runnable {
     protected Integer localPort, remotePort;
@@ -26,7 +27,7 @@ abstract class Communicator implements Runnable {
     protected volatile Socket socket = new Socket();
     protected String password = "";
     protected volatile boolean callForShutdown = false, active = false;
-    protected volatile Queue<DataPacket> uploadQueue = new LinkedList<DataPacket>();
+    protected volatile Queue<DataPacket> uploadQueue = new LinkedBlockingQueue<>();
     protected volatile LocalDateTime lastSuccessfulSend;
     protected volatile Constants.Status status = Constants.Status.Initialized;
 
@@ -107,12 +108,10 @@ abstract class Communicator implements Runnable {
     }
 
     private void sendPackets(){
-        Queue<DataPacket> packetsToSend = new LinkedList<>(uploadQueue);
-        for (int i = 0; i < 10 && !packetsToSend.isEmpty(); i++){
+        for (int i = 0; i < 10 && !uploadQueue.isEmpty(); i++){
             try {
-                objectOutput.writeObject(packetsToSend.peek());
-                packetsToSend.poll();
-                uploadQueue.poll();//TODO:A bit of a dirty solution
+                objectOutput.writeObject(uploadQueue.peek());
+                uploadQueue.poll();
             } catch (IOException e) {
                 initiateDisconnect();
                 break;
