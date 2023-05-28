@@ -21,7 +21,6 @@ class PacketReader implements Runnable {
     public PacketReader(InputStream inputStream) throws IOException {
         this.inputStream = inputStream;
         objectInput = new ObjectInputStream(this.inputStream);
-        //objectInput.setObjectInputFilter(new PacketFilter());//FIXME
         receivedPackets = new ConcurrentLinkedQueue<>();
     }
 
@@ -67,18 +66,23 @@ class PacketReader implements Runnable {
         isRunning = true;
         while (read) {
             try {
-                //objectInput.reset();//TODO:Find out if this is needed after a timeout
                 Object receivedPacket = objectInput.readObject();
                 if (!(receivedPacket instanceof HeartbeatPacket))
                     receivedPackets.add(receivedPacket);
             } catch (EOFException e){
-                CloseReader(false);//TODO:Account for this in Communicator
+                CloseReader(false);//False, because it would be waiting for itself to shut down
             } catch (IOException e) {
                 if (e instanceof SocketTimeoutException)
                     continue;
-                //e.printStackTrace(); //TODO:Handle this if needed
+
+                CloseReader(false);
             } catch (ClassNotFoundException ignored) {
             } catch (Exception ignored) {}
+
+            if (Thread.interrupted()){
+                isRunning = false;
+                read = false;
+            }
         }
         try {
             objectInput.close();

@@ -46,17 +46,22 @@ abstract class Communicator implements Runnable {
         status = Constants.Status.Disconnected;
         while (!callForShutdown){
             try {
-                if (status != Constants.Status.Connected)
+                if (status != Constants.Status.Connected) {
                     establishConnection();
-                else if (lastSuccessfulSend.plusSeconds(3).isBefore(LocalDateTime.now())) {
+                } else if (!TcpReader.isRunning()){
+                    initiateDisconnect();
+                } else if (lastSuccessfulSend.plusSeconds(3).isBefore(LocalDateTime.now())) {
                     sendHeartbeat();
-                } else if (uploadQueue.size() == 0){
+                } else if (uploadQueue.size() == 0) {
                     Thread.sleep(10);
                 } else {
                     sendPackets();
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                callForShutdown = true;
+                active = false;
+                return;
             }
         }
         performShutdown();
@@ -81,7 +86,7 @@ abstract class Communicator implements Runnable {
     protected abstract boolean establishConnection();
 
     protected void performShutdown() {
-        try { TcpReader.CloseReader(true); } catch (Exception ignored) {}
+        try { TcpReader.CloseReader(true); TcpReaderThread.join(); } catch (Exception ignored) {}
         try { outputStream.close(); } catch (Exception ignored) {}
         try { socket.close(); } catch (Exception ignored) {}
         status = Constants.Status.Stopped;
@@ -109,7 +114,6 @@ abstract class Communicator implements Runnable {
                 packetsToSend.poll();
                 uploadQueue.poll();//TODO:A bit of a dirty solution
             } catch (IOException e) {
-                //e.printStackTrace();
                 initiateDisconnect();
                 break;
             }

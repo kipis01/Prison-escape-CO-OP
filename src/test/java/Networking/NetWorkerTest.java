@@ -1,27 +1,22 @@
 package Networking;
 
-import Networking.Packets.DataPacket;
-import Networking.Packets.Packet;
+import Networking.Packets.TestPacket;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.crypto.Data;
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class NetWorkerTest {
     NetWorker client, server;
     final String PASSWORD = "testing_123", SERVER_ADD = "localhost";
-    final int SERVER_PORT = 8000, WaitForConnectionInMs = 2000;
+    final int SERVER_PORT = 8000, WaitForConnectionInMs = 500;//2000;
 
 
     final Float floatData1 = 5.45f, floatData2 = -838.156f;
@@ -38,8 +33,9 @@ class NetWorkerTest {
 
     @AfterEach
     void tearDown() {
-        client.stopNetWorker(true);
-        server.stopNetWorker(true);
+        if (client != null) client.stopNetWorker(true);
+        if (server != null) server.stopNetWorker(true);
+        client = server = null;
     }
 
     @Test
@@ -115,10 +111,63 @@ class NetWorkerTest {
         assertEquals(0, recPackets.size());
     }
 
+    /**
+     * Ensures, that no inner packets are presented
+     * @throws InterruptedException
+     */
     @Test
-    void packetFilterTest() throws InterruptedException {
+    void packetFilter() throws InterruptedException {
         Thread.sleep(10000);
         assertEquals(0, server.getReceivedPackets().size());
         assertEquals(0, client.getReceivedPackets().size());
+    }
+
+    /**
+     * Tests connection reacquire on sudden connection loss
+     * @throws InterruptedException
+     * @throws UnknownHostException
+     */
+    @Test
+    void connectionLoss() throws InterruptedException, UnknownHostException {
+        client.communicator.TcpReaderThread.interrupt();
+        client.communicator.TcpReaderThread.join();
+        client.thread.interrupt();
+        client.thread.join();
+        Thread.sleep(2000);
+        assertEquals(Constants.Status.Disconnected, server.getStatus());
+
+        client = new NetWorker(InetAddress.getByName(SERVER_ADD), SERVER_PORT, PASSWORD);
+        client.startNetWorker();
+        server.SendPacket(new TestPacket(floatData1, floatData2, stringData1));
+        client.SendPacket(new TestPacket(floatData2, floatData1, stringData1));
+
+        Queue<Object> rpackets = waitForPackets(client, 5);
+        assertEquals(Constants.Status.Connected, server.getStatus());
+        assertEquals(Constants.Status.Connected, client.getStatus());
+        assertEquals(1, rpackets.size());
+        Object packet = rpackets.poll();
+        assertInstanceOf(TestPacket.class, packet);
+        assertEquals(new TestPacket(floatData1, floatData2, stringData1), packet);
+
+        rpackets = waitForPackets(server, 1);
+        assertEquals(1, rpackets.size());
+        packet = rpackets.poll();
+        assertEquals(new TestPacket(floatData2, floatData1, stringData1), packet);
+    }
+
+    /**
+     * Tests connection loss detection
+     * @throws InterruptedException
+     */
+    @Test
+    void heartBeat() throws InterruptedException {
+        client.communicator.TcpReaderThread.interrupt();
+        client.communicator.TcpReaderThread.join();
+        client.thread.interrupt();
+        client.thread.join();
+        Thread.sleep(4000);
+        client = null;
+
+        assertEquals(Constants.Status.Disconnected, server.getStatus());
     }
 }

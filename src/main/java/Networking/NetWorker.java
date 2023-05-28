@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NetWorker {
-    private Communicator communicator;
-    private Thread thread;
+    protected Communicator communicator;
+    protected Thread thread;
 
     /**
      * Initiates a server
@@ -45,6 +45,7 @@ public class NetWorker {
      */
     public void stopNetWorker(boolean halting) {
         communicator.shutDown(halting);
+        try{ thread.join(); } catch (InterruptedException ignored){}
     }
 
     /**
