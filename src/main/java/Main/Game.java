@@ -1,14 +1,10 @@
 package Main;
 
-import Entities.NPC.PrisonGuard;
 import GameStates.GameState;
 import GameStates.Menu;
 import GameStates.Playing;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class Game implements Runnable {
 
@@ -20,9 +16,7 @@ public class Game implements Runnable {
 
 	private Playing playing;
 	private Menu menu;
-	private List<PrisonGuard> enemies;
-
-
+//	private List<PrisonGuard> enemies;
 
 	public final static int TILES_DEFAULT_SIZE = 24;
 	public final static float SCALE = 2.5f;
@@ -41,21 +35,17 @@ public class Game implements Runnable {
 		startGameLoop();
 	}
 
-
 	private void initClasses() {
 		menu = new Menu(this);
 		playing = new Playing(this);
-		enemies = new ArrayList<>();
+//		enemies = new ArrayList<>();
 	}
-
-
-
 
 	private void startGameLoop() {
 		gameThread = new Thread(this);
 		gameThread.start();
-		PrisonGuard enemy = new PrisonGuard(0, 0,100,100, 1); // Set the initial position of the enemy
-		enemies.add(enemy);
+//		PrisonGuard enemy = new PrisonGuard(0, 0, 256, 160, 1); // Set the initial position of the enemy
+//		enemies.add(enemy);
 	}
 
 	private void update() {
@@ -65,7 +55,7 @@ public class Game implements Runnable {
 				break;
 			case PLAYING:
 				playing.update();
-				updateEnemies();
+//				updateEnemies();
 				break;
 			case OPTIONS:
 			case QUIT:
@@ -76,12 +66,11 @@ public class Game implements Runnable {
 		}
 	}
 
-	private void updateEnemies() {
-		for (PrisonGuard enemy : enemies) {
-			enemy.update();
-		}
-	}
-
+//	private void updateEnemies() {
+//		for (PrisonGuard enemy : enemies) {
+//			enemy.update();
+//		}
+//	}
 
 	public void render(Graphics g) {
 		switch (GameState.state) {

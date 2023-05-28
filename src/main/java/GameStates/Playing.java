@@ -1,33 +1,39 @@
 package GameStates;
 
-import Entities.NPC.PrisonGuard;
+import Entities.EnemyManager;
+//import Entities.NPC.PrisonGuard;
 import Entities.Player;
 import Levels.LevelManager;
-import Main.Game;
 import Ui.PauseOverlay;
 import Utils.LoadSave;
+import Main.Game;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
+import static Main.Game.*;
 
 public class Playing extends State implements Statemethods {
 	private Player player;
 
 	private LevelManager levelManager;
+	private EnemyManager enemyManager;
 	private boolean paused = false;
 	private PauseOverlay pauseOverlay;
 
 	private int xLevelOffset;
-	private int leftBorder = (int) (0.2 * Game.GAME_WIDTH);
-	private int rightBorder = (int) (0.8 * Game.GAME_WIDTH);
+	
+	//Level border needed to offset the background when in the first 20% or the last 80%
+	private int leftBorder = (int) (0.2 * GAME_WIDTH);
+	private int rightBorder = (int) (0.8 * GAME_WIDTH);
+	
+	//Entire level width (img width)
 	private int lvlTilesWide = LoadSave.GetLevelData()[0].length;
-	private int maxTilesOffset = lvlTilesWide - Game.TILES_IN_WIDTH;
-	private int maxLevelOffsetX = maxTilesOffset * Game.TILES_SIZE;
-	private List<PrisonGuard> prisonGuards;
+	
+	//Remaining tiles for the level
+	private int maxTilesOffset = lvlTilesWide - TILES_IN_WIDTH;
+	private int maxLevelOffsetX = maxTilesOffset * TILES_SIZE;
 
 	private BufferedImage backgroundImg, backgroundImgLayer2, backgroundImgLayer3;
 
@@ -41,56 +47,36 @@ public class Playing extends State implements Statemethods {
 	}
 
 	private void initClasses() {
-			levelManager = new LevelManager(game);
-			player = new Player(100, 100, (int) (56 * game.SCALE), (int) (56 * game.SCALE), levelManager);
-			// ...
-
-			// Initialize the PrisonGuard instance
-
+		//Load the level
+		levelManager = new LevelManager(game);
+		
+		//Load the enemies
+		enemyManager = new EnemyManager(this);
+		
+		//Load the player
+		player = new Player(100, 100, (int) (56 * game.SCALE), (int) (56 * game.SCALE), levelManager);
 		player.loadLevelData(levelManager.getCurrentLeve().getLevelData());
-		prisonGuards = new ArrayList<>();
-		pauseOverlay = new PauseOverlay(this);
-		spawnPrisonGuards();
+		pauseOverlay = new PauseOverlay(this);;
 	}
 
 	public void windowFocusLost() {
 		player.resetDirBooleans();
 	}
-	private void spawnPrisonGuards() {
-		// Create and add PrisonGuard objects to the list
-		PrisonGuard guard1 = new PrisonGuard(200, 200, 32, 64, 1); // Type 1 movement
-
-		guard1.setLevelManager(levelManager); // Assign the levelManager
-		prisonGuards.add(guard1);
-
-		PrisonGuard guard2 = new PrisonGuard(300, 400, 32, 64, 2); // Type 2 movement
-		guard2.setLevelManager(levelManager); // Assign the levelManager
-		prisonGuards.add(guard2);
-
-		// Assign the levelManager to all remaining PrisonGuard instances
-		for (PrisonGuard guard : prisonGuards) {
-			guard.setLevelManager(levelManager);
-		}
-	}
+	
 	@Override
 	public void update() {
 		if (!paused) {
 			levelManager.update();
 			player.update();
-
-			for (PrisonGuard guard : prisonGuards) {
-				guard.update();
-				guard.checkTileCollision(levelManager.getCurrentLeve().getLevelData());
-			}
-
-
+			enemyManager.update(levelManager.getCurrentLeve().getLevelData(), player);
+			
 			checkCloseToBorder();
 		} else {
 			pauseOverlay.update();
 		}
 	}
 
-
+	//Check when to move the background based on the player position
 	private void checkCloseToBorder() {
 		int playerX = (int) player.getHitbox().x;
 		int diff = playerX - xLevelOffset;
@@ -108,21 +94,16 @@ public class Playing extends State implements Statemethods {
 	@Override
 	public void draw(Graphics g) {
 		g.drawImage(backgroundImg, 0, 0, Game.GAME_WIDTH, Game.GAME_HEIGHT, null);
-
 		drawLayer2(g);
 		drawLayer3(g);
-
+		
 		levelManager.draw(g, xLevelOffset);
 
-		// Render the player
+		// Draw the player
 		player.render(g, xLevelOffset);
-		// Render the PrisonGuard
-		// Render the PrisonGuard
-		for (PrisonGuard guard : prisonGuards) {
-			guard.render(g, xLevelOffset);
-		}
-
-
+	
+		// Draw the enemies
+		enemyManager.draw(g, xLevelOffset);
 
 		if (paused) {
 			g.setColor(new Color(0, 0, 0, 150));
@@ -131,14 +112,11 @@ public class Playing extends State implements Statemethods {
 		}
 	}
 
-
-
 	private void drawLayer2(Graphics g) {
 		for (int i = 0; i < 3; i++) {
 			g.drawImage(backgroundImgLayer2, 0 + i * Game.GAME_WIDTH - (int) (xLevelOffset * 0.3), 0, Game.GAME_WIDTH,
 					Game.GAME_HEIGHT, null);
 		}
-
 	}
 
 	private void drawLayer3(Graphics g) {
@@ -146,9 +124,13 @@ public class Playing extends State implements Statemethods {
 			g.drawImage(backgroundImgLayer3, 0 + i * Game.GAME_WIDTH - (int) (xLevelOffset * 0.6), 0, Game.GAME_WIDTH,
 					Game.GAME_HEIGHT, null);
 		}
-
 	}
 
+	public void mouseDragged(MouseEvent e) {
+		if(paused)
+			pauseOverlay.mouseDragged(e);
+	}
+	
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
@@ -160,21 +142,18 @@ public class Playing extends State implements Statemethods {
 	public void mousePressed(MouseEvent e) {
 		if (paused)
 			pauseOverlay.mousePressed(e);
-
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		if (paused)
 			pauseOverlay.mouseReleased(e);
-
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		if (paused)
 			pauseOverlay.mouseMoved(e);
-
 	}
 
 	@Override
@@ -188,6 +167,9 @@ public class Playing extends State implements Statemethods {
 			break;
 		case KeyEvent.VK_SPACE:
 			player.setJump(true);
+			break;
+		case KeyEvent.VK_SHIFT:
+			player.setSprint(true);
 			break;
 		case KeyEvent.VK_ESCAPE:
 			paused = !paused;
@@ -204,12 +186,13 @@ public class Playing extends State implements Statemethods {
 		case KeyEvent.VK_D:
 			player.setRight(false);
 			break;
+		case KeyEvent.VK_SHIFT:
+			player.setSprint(false);
+			break;
 		case KeyEvent.VK_SPACE:
 			player.setJump(false);
 			break;
-
 		}
-
 	}
 
 	public void unpauseGame() {

@@ -17,7 +17,13 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		// TODO Auto-generated method stub
+		switch (GameState.state) {
+		case PLAYING:
+			gamePanel.getGame().getPlaying().mouseDragged(e);
+			break;
+		default:
+			break;
+		}
 
 	}
 
@@ -44,7 +50,6 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 		default:
 			break;
 		}
-
 	}
 
 	@Override
@@ -70,9 +75,7 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 			break;
 		default:
 			break;
-
 		}
-
 	}
 
 	@Override
@@ -86,9 +89,7 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 			break;
 		default:
 			break;
-
 		}
-
 	}
 
 }

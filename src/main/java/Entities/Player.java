@@ -1,6 +1,5 @@
 package Entities;
 
-import Entities.NPC.PrisonGuard;
 import Levels.LevelManager;
 import Main.Game;
 import Utils.FlipImage;
@@ -11,56 +10,60 @@ import java.awt.image.BufferedImage;
 
 import static Utils.Constants.PlayerConstants.*;
 import static Utils.HelpMethods.*;
+import static Main.Game.SCALE;
 
 public class Player extends Entity {
 
+	//Arrays
 	private BufferedImage[][] animations;
-
+	private int[][] lvlData;
+	
+	//Animations
 	private int aniTick, aniIndex, aniSpeed = 20;
 	private int playerAction = IDLE;
 	private boolean moving = false, attacking = false;
-	private boolean left, up, right, down, jump;
-	private float playerSpeed = 1.0f * Game.SCALE;
-	private int[][] lvlData;
-	private float xDrawOffset = 18 * Game.SCALE;
-	private float yDrawOffset = 24 * Game.SCALE;
-
+	private boolean left, up, right, down, jump, sprintRight, sprintLeft;
+	
+	//Player position
+	private float xDrawOffset = 18 * SCALE;
+	private float yDrawOffset = 24 * SCALE;
 	private boolean defaultDirection = true;
+	private int health;
 
-	// Jumping / Gravity
+	// Player physics
+	private float playerSpeed = 0.6f * SCALE;
+	private float playerSprintSpeed = 1.2f * SCALE;
 	private float airSpeed = 0f;
-	private float gravity = 0.04f * Game.SCALE;
-	private float jumpSpeed = -2f * Game.SCALE;
-	private float fallSpeedAfterCollision = 0.5f * Game.SCALE;
+	private float gravity = 0.04f * SCALE;
+	private float jumpSpeed = -2f * SCALE;
+	private float fallSpeedAfterCollision = 0.5f * SCALE;
 	private boolean inAir = true;
-	private int health; // Player's health
 
 	private LevelManager levelManager;
-	private PrisonGuard guard;
+//	private PrisonGuard guard;
+	
 	public Player(float x, float y, int width, int height, LevelManager levelManager) {
 		super(x, y, width, height);
 		loadAnimations();
-		initHitbox(x, y, 18 * Game.SCALE, (int) 31 * Game.SCALE);
+		initHitbox(x, y, 18 * SCALE, 31 * SCALE);
 		this.health = 100; // Initialize health to 100
 		this.levelManager = levelManager; // Set the levelManager instance
 	}
-
-
 
 	public void update() {
 		updatePos();
 		updateAnimationTick();
 		setAnimation();
-		if (attacking && guard != null && guard.isHit(hitbox)) {
-			guard.takeDamage(10); // Inflict 10 damage on the guard
-		}
-		if (guard != null && hitbox.intersects(guard.getHitbox())) {
-			System.out.println("Player collided with PrisonGuard!");
-			// Perform actions when player collides with the guard
-		}
+		
+//		if (attacking && guard != null && guard.isHit(hitbox)) {
+//			guard.takeDamage(10); // Inflict 10 damage on the guard
+//		}
+//		
+//		if (guard != null && hitbox.intersects(guard.getHitbox())) {
+//			System.out.println("Player collided with PrisonGuard!");
+//			// Perform actions when player collides with the guard
+//		}
 	}
-
-
 
 	public void render(Graphics g, int levelOffset) {
 		BufferedImage animation;
@@ -72,9 +75,10 @@ public class Player extends Entity {
 
 		g.drawImage(animation, (int) (hitbox.x - xDrawOffset) - levelOffset, (int) (hitbox.y - yDrawOffset), width,
 				height, null);
-		drawHitbox(g);
+		drawHitbox(g, levelOffset);
 
 	}
+	
 	public void takeDamage() {
 		health -= 10; // Reduce health by 10 when taking damage
 		System.out.println("Player took damage. Current health: " + health);
@@ -84,8 +88,8 @@ public class Player extends Entity {
 			// Implement game over logic here
 		}
 	}
+	
 	private void loadAnimations() {
-
 		BufferedImage img = LoadSave.GetSpriteAtlas(LoadSave.PLAYER_ATLAS);
 
 		animations = new BufferedImage[7][10];
@@ -105,6 +109,8 @@ public class Player extends Entity {
 		right = false;
 		up = false;
 		down = false;
+		sprintRight = false;
+		sprintLeft = false;
 	}
 
 	public void setAttacking(boolean attacking) {
@@ -120,13 +126,9 @@ public class Player extends Entity {
 				aniIndex = 0;
 				attacking = false;
 			}
-
 		}
-
 	}
-	public void setGuard(PrisonGuard guard) {
-		this.guard = guard;
-	}
+	
 	private void setAnimation() {
 		int startAni = playerAction;
 
@@ -156,12 +158,9 @@ public class Player extends Entity {
 
 	private void updatePos() {
 		moving = false;
-
+		
 		if (jump)
 			jump();
-
-//		if (!left && !right && !inAir)
-//			return;
 
 		if (!inAir)
 			if ((!left && !right) || (left && right))
@@ -169,16 +168,33 @@ public class Player extends Entity {
 
 		float xSpeed = 0;
 
-		if (left) {
+		//Right and Left movement
+		if (left && !sprintLeft) {
 			xSpeed -= playerSpeed;
+			resetSprint();
 			defaultDirection = false;
 		}
 
-		if (right) {
-			xSpeed += playerSpeed;
+		if (right && !sprintRight) {
+			xSpeed = playerSpeed;
+			resetSprint();
 			defaultDirection = true;
 		}
-
+		
+		if (left && sprintLeft) {
+			xSpeed -= playerSprintSpeed;
+			sprintRight = false;
+			defaultDirection = false;
+		}
+		
+		if (right && sprintRight) {
+			xSpeed = playerSprintSpeed;
+			sprintLeft = false;
+			defaultDirection = true;
+		}
+	
+		//Up and down movement
+		
 		if (!inAir)
 			if (!IsEntityOnFloor(hitbox, lvlData))
 				inAir = true;
@@ -209,10 +225,14 @@ public class Player extends Entity {
 		airSpeed = jumpSpeed;
 	}
 
+	public void resetSprint() {
+		sprintLeft = false;
+		sprintRight = false;
+	}
+	
 	private void resetInAir() {
 		inAir = false;
 		airSpeed = 0;
-
 	}
 
 	private void updateXPos(float xSpeed) {
@@ -221,7 +241,6 @@ public class Player extends Entity {
 		} else {
 			hitbox.x = GetEntityXPosNextToWall(hitbox, xSpeed);
 		}
-
 	}
 
 	public boolean isLeft() {
@@ -255,10 +274,17 @@ public class Player extends Entity {
 	public void setDown(boolean down) {
 		this.down = down;
 	}
-
+	
+	public void setSprint (boolean sprint) {
+		if (defaultDirection == true) {
+			this.sprintRight = sprint;
+		} else this.sprintLeft = sprint;
+	}
+	
 	public void setJump(boolean jump) {
 		this.jump = jump;
 	}
+	
 	public float getX() {
 		return x;
 	}

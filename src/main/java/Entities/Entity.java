@@ -15,26 +15,20 @@ public abstract class Entity {
 		this.y = y;
 		this.width = width;
 		this.height = height;
-		initHitbox(x, y, width, height); // Initialize the hitbox
 	}
 
-	protected void drawHitbox(Graphics g) {
-		// For debugging the hitbox
+	//Draws the hitbox over the entity (for debugging purposes)
+	protected void drawHitbox(Graphics g, int xLevelOffset) {
 		g.setColor(Color.PINK);
-		g.drawRect((int) hitbox.x, (int) hitbox.y, (int) hitbox.width, (int) hitbox.height);
+		g.drawRect((int) hitbox.x - xLevelOffset, (int) hitbox.y, (int) hitbox.width, (int) hitbox.height);
 	}
 
+	//Creates the hitbox for any type of entity
 	protected void initHitbox(float x, float y, float width, float height) {
 		hitbox = new Rectangle2D.Float(x, y, width, height);
 	}
 
-	protected void updateHitbox() {
-		hitbox.x = x;
-		hitbox.y = y;
-		hitbox.width = width;
-		hitbox.height = height;
-	}
-
+	//Getter for the hitbox
 	public Rectangle2D.Float getHitbox() {
 		return hitbox;
 	}

@@ -2,7 +2,8 @@ package Utils;
 
 import java.awt.geom.Rectangle2D;
 
-import Main.Game;
+import static Main.Game.TILES_SIZE;
+import static Main.Game.GAME_HEIGHT;
 
 public class HelpMethods {
 
@@ -16,17 +17,22 @@ public class HelpMethods {
 				&& !IsSolid(bottomRightX, topLeftY, lvlData) && !IsSolid(topLeftX, bottomRightY, lvlData);
 	}
 
+	//Check wheter it is a tile and inside the game window
 	private static boolean IsSolid(float x, float y, int[][] lvlData) {
-		int maxWidth = lvlData[0].length * Game.TILES_SIZE;
+		int maxWidth = lvlData[0].length * TILES_SIZE;
 		if (x < 0 || x >= maxWidth)
 			return true;
-		if (y < 0 || y >= Game.GAME_HEIGHT)
+		if (y < 0 || y >= GAME_HEIGHT)
 			return true;
 
-		int xIndex = (int) (x / Game.TILES_SIZE);
-		int yIndex = (int) (y / Game.TILES_SIZE);
-
-		int value = lvlData[yIndex][xIndex];
+		int xIndex = (int) (x / TILES_SIZE);
+		int yIndex = (int) (y / TILES_SIZE);
+		
+		return IsTileSolid((int) xIndex, (int) yIndex, lvlData);
+	}
+	
+	public static boolean IsTileSolid(int xTile, int yTile, int[][] lvlData ) {
+		int value = lvlData[yTile][xTile];
 
 		if (value >= 48 || value < 0 || value != 4)
 			return true;
@@ -34,27 +40,27 @@ public class HelpMethods {
 	}
 
 	public static float GetEntityXPosNextToWall(Rectangle2D.Float hitbox, float xSpeed) {
-		int currentTile = (int) (hitbox.x / Game.TILES_SIZE);
+		int currentTile = (int) (hitbox.x / TILES_SIZE);
 		if (xSpeed > 0) {
 			// Right
-			int tileXPos = currentTile * Game.TILES_SIZE;
-			int xOffset = (int) (Game.TILES_SIZE - hitbox.width);
+			int tileXPos = currentTile * TILES_SIZE;
+			int xOffset = (int) (TILES_SIZE - hitbox.width);
 			return tileXPos + xOffset - 1;
 		} else
 			// Left
-			return currentTile * Game.TILES_SIZE;
+			return currentTile * TILES_SIZE;
 	}
 
 	public static float GetEntityYPosUnderRoofOrAboveFloor(Rectangle2D.Float hitbox, float airSpeed) {
-		int currentTile = (int) (hitbox.y / Game.TILES_SIZE);
+		int currentTile = (int) (hitbox.y / TILES_SIZE);
 		if (airSpeed > 0) {
 			// Falling - touching floor
-			int tileYPos = (currentTile + 1) * Game.TILES_SIZE;
-			int yOffset = (int) (Game.TILES_SIZE - hitbox.y % Game.TILES_SIZE);
+			int tileYPos = (currentTile + 1) * TILES_SIZE;
+			int yOffset = (int) (TILES_SIZE - hitbox.y % TILES_SIZE);
 			return tileYPos - yOffset - 1;
 		} else {
 			// Jumping
-			return currentTile * Game.TILES_SIZE;
+			return currentTile * TILES_SIZE;
 		}
 	}
 
@@ -64,5 +70,28 @@ public class HelpMethods {
 			if (!IsSolid(hitbox.x + hitbox.width, hitbox.y + hitbox.height + 1, lvlData))
 				return false;
 		return true;
+	}
+	
+	public static boolean IsFloor(Rectangle2D.Float hitbox, float xSpeed, int[][] lvlData) {
+		return IsSolid(hitbox.x + xSpeed, hitbox.y + hitbox.height + 1, lvlData);
+	}
+	
+	public static boolean IsAllTilesWalkable(int xStart, int xEnd, int y, int[][] lvlData) {
+		for(int i = 0; i < xEnd - xStart; i++)
+			if (IsTileSolid(xStart + i, y, lvlData))
+				return false;
+		return true;
+	}
+	
+	public static boolean IsSightClear(int[][] lvlData, Rectangle2D.Float firstHitbox, 
+			Rectangle2D.Float secondHitbox, int yTile) {
+		int firstXTile = (int) (firstHitbox.x / TILES_SIZE);
+		int secondXTile = (int) (secondHitbox.x / TILES_SIZE);
+		
+		if (firstXTile > secondXTile)
+			return IsAllTilesWalkable(secondXTile, firstXTile, yTile, lvlData);
+		else
+			return IsAllTilesWalkable(firstXTile, secondXTile, yTile, lvlData);
+
 	}
 }
