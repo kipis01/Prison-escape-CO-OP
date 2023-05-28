@@ -1,10 +1,11 @@
 package Main;
 
+import java.awt.Graphics;
+
 import GameStates.GameState;
 import GameStates.Menu;
+import GameStates.NetworkState;
 import GameStates.Playing;
-
-import java.awt.*;
 
 public class Game implements Runnable {
 
@@ -48,31 +49,40 @@ public class Game implements Runnable {
 
 	private void update() {
 		switch (GameState.state) {
-			case MENU:
-				menu.update();
-				break;
-			case PLAYING:
-				playing.update();
-				break;
-			case OPTIONS:
-			case QUIT:
-				System.exit(0);
-				break;
-			default:
-				break;
+		case MENU:
+			menu.update();
+			break;
+		case PLAYING:
+			if (NetworkState.state != NetworkState.JOIN)
+				NetworkState.state = NetworkState.HOST;
+			playing.update();
+			break;
+		case JOINING:
+			NetworkState.state = NetworkState.JOIN;
+			GameState.state = GameState.PLAYING;
+			playing.update();
+			break;
+		case QUIT:
+			System.exit(0);
+			break;
+		default:
+			break;
 		}
 	}
 
 	public void render(Graphics g) {
 		switch (GameState.state) {
-			case MENU:
-				menu.draw(g);
-				break;
-			case PLAYING:
-				playing.draw(g);
-				break;
-			default:
-				break;
+		case MENU:
+			menu.draw(g);
+			break;
+		case PLAYING:
+			playing.draw(g);
+			break;
+		case JOINING:
+			playing.draw(g);
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -113,7 +123,7 @@ public class Game implements Runnable {
 			// Fps counter
 			if (System.currentTimeMillis() - lastCheck >= 1000) {
 				lastCheck = System.currentTimeMillis();
-				System.out.println("FPS: " + frames + " | UPS: " + updates);
+//				System.out.println("FPS: " + frames + " | UPS: " + updates);
 				frames = 0;
 				updates = 0;
 			}
