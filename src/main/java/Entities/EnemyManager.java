@@ -81,9 +81,7 @@ public class EnemyManager {
 				if (lb.getWalkDir() == RIGHT)
 					animation = FlipImage.flipImageHorizontally(lightBanditArr[lb.getEnemyState()][lb.getAniIndex()]);
 				else
-					animation = lightBanditArr[lb.getEnemyState()][lb.getAniIndex()];
-
-        //g.drawImage(animation, (int) lb.getHitbox().x - LIGHT_BANDIT_DRAWOFFSET_X - xLevelOffset, (int) lb.getHitbox().y - LIGHT_BANDIT_DRAWOFFSET_Y, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
+					animation = lightBanditArr[lb.getEnemyState()][lb.getAniIndex()];;
 				
 				lb.drawHealthbar(g, xLevelOffset, healthWidth);
 				
@@ -95,14 +93,6 @@ public class EnemyManager {
 				int yLoc = (int) lb.getHitbox().y - LIGHT_BANDIT_DRAWOFFSET_Y;
 
 				g.drawImage(animation, xLoc, yLoc, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
-
-				g.setColor(Color.RED);
-
-				g.drawRect((int) lb.getHitbox().x - xLevelOffset, (int) lb.getHitbox().y, (int) lb.getHitbox().width,
-						(int) lb.getHitbox().height);
-
-				// Attack Box for Enemy
-				lb.drawAttackBox(g, xLevelOffset);
 
 				NpcData npc = new NpcData();
 				npc.xLoc = xLoc;
