@@ -20,13 +20,9 @@ import Main.Game;
 
 public class LightBandit extends Enemy implements Serializable {
 
-	// Attackbox
-	private Rectangle2D.Float attackBox;
-	private int attackBoxOffsetX;
-
 	public LightBandit(float x, float y) {
 		super(x, y, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, LIGHT_BANDIT);
-		initHitbox(x, y, (int) (20 * Game.SCALE), (int) (42 * Game.SCALE));
+		initHitbox(20, 41);
 		initAttackBox();
 	}
 
@@ -52,6 +48,10 @@ public class LightBandit extends Enemy implements Serializable {
 	public int getWalkDir() {
 		return this.walkDir;
 	}
+	
+	public int getCurrentHealth() {
+		return this.currentHealth;
+}
 
 	public void drawAttackBox(Graphics g, int xLevelOffset) {
 		g.setColor(Color.blue);
@@ -66,23 +66,23 @@ public class LightBandit extends Enemy implements Serializable {
 		if (inAir) {
 			updateInAir(lvlData);
 		} else {
-			switch (enemyState) {
+			switch(state) {
 			case IDLE:
 				newState(RUN);
 				break;
 			case RUN:
-				if (canSeePlayer(lvlData, player))
+				if(canSeePlayer(lvlData, player)) {
 					turnTowardsPlayer(player);
-				if (isPlayerCloseForAttack(player))
-					newState(ATTACK);
-
+					if (isPlayerCloseForAttack(player))
+						newState(ATTACK);
+				}
 				move(lvlData);
 				break;
 			case ATTACK:
 				if (aniIndex == 0)
 					attackChecked = false;
-				if (aniIndex == 3 && !attackChecked)
-					checkEnemyHit(attackBox, player);
+				if(aniIndex == 4 && !attackChecked)
+					checkPlayerHit(attackBox, player);
 				break;
 			case HIT:
 				break;

@@ -17,12 +17,18 @@ public class GameOverOverlay {
 	}
 	
 	public void draw(Graphics g) {
-		g.setColor(new Color(0, 0, 0, 200));
-		g.fillRect(0,  0, Game.GAME_WIDTH, Game.GAME_HEIGHT);
+		Color myWhite = new Color(255, 255, 255); // Color white
+		
+		g.setColor(new Color(0, 0, 0, 230));
+		g.fillRect(0, 0, Game.GAME_WIDTH, Game.GAME_HEIGHT);
+		
+		g.setColor(myWhite);
+		g.fillRect(400, 200, Game.GAME_WIDTH / 2, Game.GAME_HEIGHT / 2);
 	
-		g.setColor(Color.white);
-		g.drawString("Game Over",Game.GAME_WIDTH /2, 150);
-		g.drawString("Press esc to enter Main Menu!", Game.GAME_WIDTH / 2, 300);
+		g.setColor(Color.black);
+
+		g.drawString("Game Over",Game.GAME_WIDTH /2 - 40, 300);
+		g.drawString("Press esc to enter Main Menu!", Game.GAME_WIDTH / 2 - 90, 500);
 	}
 	
 	public void keyPressed(KeyEvent e) {

@@ -28,7 +28,6 @@ public class LevelManager {
 				int index = j * 21 + i;
 				levelSprite[index] = imgBufferedImage.getSubimage(i * 24, j * 24, 24, 24);
 			}
-
 	}
 
 	public void draw(Graphics g, int levelOffset) {
@@ -38,14 +37,13 @@ public class LevelManager {
 				int index = levelOne.getSpriteIndex(i, j);
 				g.drawImage(levelSprite[index], TILES_SIZE * i - levelOffset, TILES_SIZE * j, TILES_SIZE, TILES_SIZE, null);
 			}
-
 	}
 
 	public void update() {
 
 	}
 
-	public Level getCurrentLeve() {
+	public Level getCurrentLevel() {
 		return levelOne;
 	}
 

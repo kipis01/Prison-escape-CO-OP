@@ -50,7 +50,7 @@ public class Playing extends State implements Statemethods {
 
 	private BufferedImage backgroundImg, backgroundImgLayer2, backgroundImgLayer3;
 	private boolean gameOver;
-
+	private boolean playerDying;
 	private NetWorker server, client;
 	private PlayerData playerData;
 	private PlayerData tmPlayerData;
@@ -58,7 +58,6 @@ public class Playing extends State implements Statemethods {
 	private int playerId;
 	private boolean isPlayerTwoConnected;
 	private boolean connected = false;
-
 	public Playing(Game game) {
 		super(game);
 		initClasses();
@@ -78,7 +77,7 @@ public class Playing extends State implements Statemethods {
 
 		// Load the player
 		player = new Player(200, 100, (int) (56 * game.SCALE), (int) (56 * game.SCALE), this);
-		player.loadLevelData(levelManager.getCurrentLeve().getLevelData());
+		player.loadLevelData(levelManager.getCurrentLevel().getLevelData());
 		pauseOverlay = new PauseOverlay(this);
 		gameOverOverlay = new GameOverOverlay(this);
 
@@ -118,14 +117,18 @@ public class Playing extends State implements Statemethods {
 
 	@Override
 	public void update() {
-		if (!paused && !gameOver) {
+		if(paused) 
+			pauseOverlay.update();
+		else if (gameOver) {
+//			gameOverOverlay.update();
+		} else if (playerDying) {
+			player.update();
+		} else {
 			levelManager.update();
 			player.update();
-			enemyManager.update(levelManager.getCurrentLeve().getLevelData(), player);
+			enemyManager.update(levelManager.getCurrentLevel().getLevelData(), player);
 			checkCloseToBorder();
-		} else {
-			pauseOverlay.update();
-		}
+		} 
 	}
 
 	// Check when to move the background based on the player position
@@ -332,6 +335,10 @@ public class Playing extends State implements Statemethods {
 
 	public Player getPlayer() {
 		return player;
+	}
+
+	public void setPlayerDying(boolean playerDying) {
+		this.playerDying = playerDying;
 	}
 
 }
