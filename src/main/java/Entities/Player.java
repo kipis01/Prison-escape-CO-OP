@@ -228,9 +228,6 @@ public class Player extends Entity {
 	private void updatePos() {
 		moving = false;
 		
-		if (knockback)
-			knockback();
-		
 		if (jump)
 			jump();
 
@@ -265,6 +262,9 @@ public class Player extends Entity {
 			defaultDirection = true;
 		}
 	
+		if (knockback)
+			knockback();
+		
 		//Up and down movement
 		
 		if (!inAir)
