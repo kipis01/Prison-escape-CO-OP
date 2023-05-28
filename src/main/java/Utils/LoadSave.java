@@ -1,5 +1,7 @@
 package Utils;
 
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT;
+
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -10,8 +12,6 @@ import javax.imageio.ImageIO;
 
 import Entities.LightBandit;
 import Main.Game;
-
-import static Utils.Constants.EnemyConstants.LIGHT_BANDIT;
 
 public class LoadSave {
 
@@ -63,14 +63,14 @@ public class LoadSave {
 			for (int i = 0; i < img.getWidth(); i++) {
 				Color color = new Color(img.getRGB(i, j));
 				int value = color.getGreen();
-	
+
 				if (value == LIGHT_BANDIT)
 					list.add(new LightBandit(i * Game.TILES_SIZE, j * Game.TILES_SIZE));
 			}
 		}
 		return list;
 	}
-	
+
 	public static int[][] GetLevelData() {
 		BufferedImage img = GetSpriteAtlas(LEVEL_ONE_DATA);
 		int[][] lvlData = new int[img.getHeight()][img.getWidth()];
@@ -84,7 +84,7 @@ public class LoadSave {
 					value = 0;
 
 				lvlData[j][i] = color.getRed();
-				System.out.println(lvlData);
+//				System.out.println(lvlData);
 			}
 
 		return lvlData;

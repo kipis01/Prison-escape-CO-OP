@@ -1,16 +1,24 @@
 package Entities;
 
+import static Utils.Constants.Directions.RIGHT;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_DRAWOFFSET_X;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_DRAWOFFSET_Y;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_HEIGHT;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_HEIGHT_DEFAULT;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_WIDTH;
+import static Utils.Constants.EnemyConstants.LIGHT_BANDIT_WIDTH_DEFAULT;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import static Utils.Constants.Directions.*;
 
 import GameStates.Playing;
+import Networking.NetWorker;
+import Networking.NpcData;
 import Utils.FlipImage;
 import Utils.LoadSave;
-import static Utils.Constants.EnemyConstants.*;
 
 public class EnemyManager {
 
@@ -18,53 +26,97 @@ public class EnemyManager {
 	private BufferedImage[][] lightBanditArr;
 	private ArrayList<LightBandit> lbandits = new ArrayList<>();
 	private boolean defaultDirection = true;
-	
+
 	public EnemyManager(Playing playing) {
 		this.playing = playing;
 		loadEnemyImgs();
 		addEnemies();
 	}
-	
+
 	private void addEnemies() {
 		lbandits = LoadSave.GetLightBandits();
 	}
-	
+
 	public void update(int[][] lvlData, Player player) {
-		for(LightBandit lb : lbandits)
+		for (LightBandit lb : lbandits)
 			lb.update(lvlData, player);
 	}
-	
-	public void draw(Graphics g, int xLevelOffset) {
-		drawLightBandits(g, xLevelOffset);
+
+	public void draw(Graphics g, int xLevelOffset, NetWorker server, boolean isPlayerTwoConnected) {
+		drawLightBandits(g, xLevelOffset, server, isPlayerTwoConnected);
 	}
-	
+
+	public void drawClient(Graphics g, int xLevelOffset, NpcData npc) {
+		drawLightBanditsClient(g, xLevelOffset, npc);
+	}
+
+	private void drawLightBanditsClient(Graphics g, int xLevelOffset, NpcData npc) {
+
+		if (npc.isActive) {
+			BufferedImage animation;
+
+			if (npc.direction == RIGHT)
+				animation = FlipImage.flipImageHorizontally(lightBanditArr[npc.enemyState][npc.aniIndex]);
+			else
+				animation = lightBanditArr[npc.enemyState][npc.aniIndex];
+
+			g.drawImage(animation, npc.xLoc, npc.yLoc, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
+
+			g.setColor(Color.RED);
+
+		}
+
+	}
+
 	public void checkEnemyHit(Rectangle2D.Float attackBox) {
 		for (LightBandit lb : lbandits)
 			if (lb.isActive()) {
-				if(attackBox.intersects(lb.getHitbox())) {
+				if (attackBox.intersects(lb.getHitbox())) {
 					lb.hurt(50);
 					return;
 				}
 			}
 	}
-	
-	private void drawLightBandits(Graphics g, int xLevelOffset) {
-		for(LightBandit lb : lbandits) {
+
+	private void drawLightBandits(Graphics g, int xLevelOffset, NetWorker server, boolean isPlayerTwoConnected) {
+		for (LightBandit lb : lbandits) {
 			if (lb.isActive()) {
 				BufferedImage animation;
-		
+
 				if (lb.getWalkDir() == RIGHT)
 					animation = FlipImage.flipImageHorizontally(lightBanditArr[lb.getEnemyState()][lb.getAniIndex()]);
 				else
 					animation = lightBanditArr[lb.getEnemyState()][lb.getAniIndex()];
-				
-				g.drawImage(animation, (int) lb.getHitbox().x - LIGHT_BANDIT_DRAWOFFSET_X - xLevelOffset, (int) lb.getHitbox().y - LIGHT_BANDIT_DRAWOFFSET_Y, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
-				
+
+				int xLoc = (int) lb.getHitbox().x - LIGHT_BANDIT_DRAWOFFSET_X - xLevelOffset;
+				int yLoc = (int) lb.getHitbox().y - LIGHT_BANDIT_DRAWOFFSET_Y;
+
+				g.drawImage(animation, xLoc, yLoc, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
+
 				g.setColor(Color.RED);
-				g.drawRect((int) lb.getHitbox().x - xLevelOffset, (int) lb.getHitbox().y, (int) lb.getHitbox().width, (int) lb.getHitbox().height);
-							
-				//Attack Box for Enemy
-				lb.drawAttackBox(g,  xLevelOffset);
+
+				g.drawRect((int) lb.getHitbox().x - xLevelOffset, (int) lb.getHitbox().y, (int) lb.getHitbox().width,
+						(int) lb.getHitbox().height);
+
+				// Attack Box for Enemy
+				lb.drawAttackBox(g, xLevelOffset);
+
+				NpcData npc = new NpcData();
+				npc.xLoc = xLoc;
+				npc.yLoc = yLoc;
+				npc.enemyState = lb.getEnemyState();
+				npc.aniIndex = lb.getAniIndex();
+				npc.direction = lb.getWalkDir();
+				npc.isActive = lb.isActive();
+
+				try {
+					if (isPlayerTwoConnected) {
+						server.SendPacket(npc);
+					}
+
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
 			}
 		}
 	}
@@ -72,11 +124,12 @@ public class EnemyManager {
 	private void loadEnemyImgs() {
 		lightBanditArr = new BufferedImage[5][8];
 		BufferedImage temp = LoadSave.GetSpriteAtlas(LoadSave.LIGHT_BANDIT_SPRITE);
-		for (int j = 0; j < lightBanditArr.length; j++) 
-			for (int i = 0; i < lightBanditArr[j].length; i++) 
-				lightBanditArr[j][i] = temp.getSubimage(i * LIGHT_BANDIT_WIDTH_DEFAULT, j * LIGHT_BANDIT_HEIGHT_DEFAULT, LIGHT_BANDIT_WIDTH_DEFAULT , LIGHT_BANDIT_HEIGHT_DEFAULT);
+		for (int j = 0; j < lightBanditArr.length; j++)
+			for (int i = 0; i < lightBanditArr[j].length; i++)
+				lightBanditArr[j][i] = temp.getSubimage(i * LIGHT_BANDIT_WIDTH_DEFAULT, j * LIGHT_BANDIT_HEIGHT_DEFAULT,
+						LIGHT_BANDIT_WIDTH_DEFAULT, LIGHT_BANDIT_HEIGHT_DEFAULT);
 	}
-	
+
 	public void resetAllEnemies() {
 		for (LightBandit lb : lbandits)
 			lb.resetEnemy();
