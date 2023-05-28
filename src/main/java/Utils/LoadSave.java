@@ -16,7 +16,6 @@ import static Utils.Constants.EnemyConstants.LIGHT_BANDIT;
 public class LoadSave {
 
 	public static final String PLAYER_ATLAS = "player_sprites.png";
-	public static final String SWORDMAN_ATLAS = "swordman_1.png";
 	public static final String LIGHT_BANDIT_SPRITE = "LightBandit.png";
 	public static final String HEAVY_BANDIT_SPRITE = "HeavyBandit.png";
 	public static final String LEVEL_ATLAS = "oak_woods_tileset.png";
@@ -27,13 +26,10 @@ public class LoadSave {
 	public static final String SOUND_BUTTONS = "sound_button.png";
 	public static final String URM_BUTTONS = "urm_buttons.png";
 	public static final String VOLUME_BUTTONS = "volume_buttons.png";
-	public static final String MENU_BACKGROUND_IMG = "background1.png";
-	public static final String PLAYING_BACKGROUND_IMG = "background1.png";
-	public static final String PLAYING_BACKGROUND_IMG_LAYER_2 = "background2.png";
-	public static final String PLAYING_BACKGROUND_IMG_LAYER_3 = "background3.png";
-	public static final String HEALTH_BAR_OUTLINE = "BarV7_ProgressBarBorder.png";
-	public static final String HEALTH_BAR = "BarV7_ProgressBar.png";
-	public static final String HEALTH_BAR_BG = "BarV7_Bar.png";
+	public static final String MENU_BACKGROUND_IMG = "background_layer_1.png";
+	public static final String PLAYING_BACKGROUND_IMG = "background_layer_1.png";
+	public static final String PLAYING_BACKGROUND_IMG_LAYER_2 = "background_layer_2.png";
+	public static final String PLAYING_BACKGROUND_IMG_LAYER_3 = "background_layer_3.png";
 
 	// Get the image file of an entity
 	public static BufferedImage GetSpriteAtlas(String fileName) {
@@ -78,13 +74,11 @@ public class LoadSave {
 		for (int j = 0; j < img.getHeight(); j++)
 			for (int i = 0; i < img.getWidth(); i++) {
 				Color color = new Color(img.getRGB(i, j));
-				int value = color.getGreen();
-
-				if (value >= 48)
+				int value = color.getRed();
+				if (value > 21)
 					value = 0;
 
 				lvlData[j][i] = color.getRed();
-				System.out.println(lvlData);
 			}
 
 		return lvlData;

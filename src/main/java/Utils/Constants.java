@@ -6,6 +6,9 @@ import Main.Game;
 
 public class Constants {
 
+	public static final float GRAVITY = 0.04f * SCALE;
+	public static final int ANI_SPEED = 25;
+	
 	public static class Environment {
 		public static final int BG_LAYER2_WIDTH_DEFAULT = 320;
 		public static final int BG_LAYER2_HEIGHT_DEFAULT = 180;
@@ -73,17 +76,17 @@ public class Constants {
 			case ATTACK:
 				return 6;
 			case RUN:
-				return 6;
+				return 8;
 			case JUMP:
 				return 8;
 			case FALL:
 				return 8;
 			case HIT:
-				return 3;
+				return 8;
 			case DEAD:
-				return 9;
+				return 4;
 			default:
-				return 6;
+				return 4;
 			}
 		}
 	}
@@ -104,7 +107,7 @@ public class Constants {
 		public static final int LIGHT_BANDIT_HEIGHT = (int)(LIGHT_BANDIT_HEIGHT_DEFAULT * Game.SCALE);
 		
 		public static final int LIGHT_BANDIT_DRAWOFFSET_X = (int)(14 * Game.SCALE);
-		public static final int LIGHT_BANDIT_DRAWOFFSET_Y = (int)(6 * Game.SCALE);
+		public static final int LIGHT_BANDIT_DRAWOFFSET_Y = (int)(5 * Game.SCALE);
 
 		public static int GetSpriteAmount(int enemy_type, int enemy_state) {
 			switch (enemy_type) {

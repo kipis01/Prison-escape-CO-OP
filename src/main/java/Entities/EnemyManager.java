@@ -42,7 +42,7 @@ public class EnemyManager {
 		for (LightBandit lb : lbandits)
 			if (lb.isActive()) {
 				if(attackBox.intersects(lb.getHitbox())) {
-					lb.hurt(50);
+					lb.hurt(50); //player damage
 					return;
 				}
 			}
@@ -53,6 +53,8 @@ public class EnemyManager {
 			if (lb.isActive()) {
 				BufferedImage animation;
 		
+				int healthWidth = (int) ((lb.getCurrentHealth() / (float) GetMaxHealth(LIGHT_BANDIT) * 50));
+				
 				if (lb.getWalkDir() == RIGHT)
 					animation = FlipImage.flipImageHorizontally(lightBanditArr[lb.getEnemyState()][lb.getAniIndex()]);
 				else
@@ -60,11 +62,11 @@ public class EnemyManager {
 				
 				g.drawImage(animation, (int) lb.getHitbox().x - LIGHT_BANDIT_DRAWOFFSET_X - xLevelOffset, (int) lb.getHitbox().y - LIGHT_BANDIT_DRAWOFFSET_Y, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
 				
-				g.setColor(Color.RED);
-				g.drawRect((int) lb.getHitbox().x - xLevelOffset, (int) lb.getHitbox().y, (int) lb.getHitbox().width, (int) lb.getHitbox().height);
-							
-				//Attack Box for Enemy
-				lb.drawAttackBox(g,  xLevelOffset);
+				lb.drawHealthbar(g, xLevelOffset, healthWidth);
+				
+				// Debugging			
+//				lb.drawHitbox(g, xLevelOffset);
+//				lb.drawAttackBox(g, xLevelOffset);
 			}
 		}
 	}
