@@ -77,7 +77,6 @@ public class LightBandit extends Enemy {
 			case ATTACK:
 				if(aniIndex == 0)
 					attackChecked = false;
-				
 				if(aniIndex == 3 && !attackChecked)
 					checkEnemyHit(attackBox, player);
 				break;

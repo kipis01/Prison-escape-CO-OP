@@ -38,14 +38,11 @@ public class Game implements Runnable {
 	private void initClasses() {
 		menu = new Menu(this);
 		playing = new Playing(this);
-//		enemies = new ArrayList<>();
 	}
 
 	private void startGameLoop() {
 		gameThread = new Thread(this);
 		gameThread.start();
-//		PrisonGuard enemy = new PrisonGuard(0, 0, 256, 160, 1); // Set the initial position of the enemy
-//		enemies.add(enemy);
 	}
 
 	private void update() {
@@ -55,7 +52,6 @@ public class Game implements Runnable {
 				break;
 			case PLAYING:
 				playing.update();
-//				updateEnemies();
 				break;
 			case OPTIONS:
 			case QUIT:
@@ -65,12 +61,6 @@ public class Game implements Runnable {
 				break;
 		}
 	}
-
-//	private void updateEnemies() {
-//		for (PrisonGuard enemy : enemies) {
-//			enemy.update();
-//		}
-//	}
 
 	public void render(Graphics g) {
 		switch (GameState.state) {

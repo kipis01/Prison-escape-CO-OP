@@ -118,6 +118,8 @@ public class Constants {
 						return 8;
 					case HIT:
 						return 8;
+					case DEATH:
+						return 5;
 					default:
 						return 4;
 					}
@@ -129,7 +131,7 @@ public class Constants {
 		public static int GetMaxHealth(int enemy_type) {
 			switch (enemy_type) {
 			case LIGHT_BANDIT:
-				return 50;
+				return 100; //2hits
 			default:
 				return 1;
 			}

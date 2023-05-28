@@ -62,14 +62,15 @@ public class EnemyManager {
 				
 				g.setColor(Color.RED);
 				g.drawRect((int) lb.getHitbox().x - xLevelOffset, (int) lb.getHitbox().y, (int) lb.getHitbox().width, (int) lb.getHitbox().height);
-			
+							
+				//Attack Box for Enemy
 				lb.drawAttackBox(g,  xLevelOffset);
 			}
 		}
 	}
 
 	private void loadEnemyImgs() {
-		lightBanditArr = new BufferedImage[4][8];
+		lightBanditArr = new BufferedImage[5][8];
 		BufferedImage temp = LoadSave.GetSpriteAtlas(LoadSave.LIGHT_BANDIT_SPRITE);
 		for (int j = 0; j < lightBanditArr.length; j++) 
 			for (int i = 0; i < lightBanditArr[j].length; i++) 

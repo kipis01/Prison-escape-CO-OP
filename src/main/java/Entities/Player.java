@@ -86,7 +86,7 @@ public class Player extends Entity {
 	}
 
 	public void update() {
-		if (currentHealth <- 0) {
+		if (currentHealth <= 0) {
 			playing.setGameOver(true);
 			return;
 		}
@@ -163,7 +163,6 @@ public class Player extends Entity {
 		
 		if(currentHealth <= 0) {
 			currentHealth = 0;
-			//gameover();
 		} else if (currentHealth >= maxHealth)
 			currentHealth = maxHealth;
 	}
