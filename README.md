@@ -1,14 +1,18 @@
-# Vienkārša CO-OP spēle
+# CO-OP spēle
 
 ## Ievads
 
-Šis projekts ir vienkārša 2 spēlētāju CO-OP spēle. Šis projekts tika veidots kā daļa no LUDF OOP kursa.
+Projekts tika veidots kursa OOP ietvaros. Projekta laikā tika izveidota 2 spēlētāju CO-OP 
+spēle. Pašlaik implementētas ir klases, lai viegli pievienotu jaunus pretiniekus, cīņas
+elementi un spēlētāju kustību un mijiedarbība ar apkārtējo vidi.
 
 ### Motivācija
 
-Mēs izvēlējāmies taisīt spēli kā mūsu projektu, jo mēs vēlējāmies uztaisīt ko interesantu.
-Neviens no mums nekad nav strādājis pie nopietnākām spēlēm, kā pie komandrindas labirintiem un tamlīdzīgiem prastiem projektiem.
-Ar šo projektu mēs vēlamies iepazīt vienkāršu spēļu dizainu, un saprast grūtības, kas slēpjas šajā nozarē.
+Mēs izvēlējāmies taisīt spēli kā mūsu projektu, jo atšķirībā no citiem Javas pielietojumiem, šis
+viennozīmigi rada interesi. Neviens no mums nekad nav strādājis pie spēles izstrādes. Mūsu 
+repertuārā ir mājaslapu izveide, komandrindu labirinti un līdzīga mēroga projekti.
+Ar šo projektu mēs vēlamies izaicināt sevi un iepazīt spēļu dizainu, lai atrastu pielietojumu
+pašreizējamajām programmēšanas prasmēm.
 
 ___
 
@@ -30,16 +34,18 @@ ___
 #### Bez kompilēšanas
 
 Ja vēlas spēli palaist bez nepieciešamības kompilēt, tad ir iespējams nolādēt nokompilēto versiju no `Releases` sadaļas.
-Papildus uz datora ir nepieciešama Java 20
+Papildus tev būs nepieciešams ielādēt Java 20.
 
 #### Ar kompilēšanu
 
-Ja vēlaties kompilēt spēli, ir nepieciešama openjdk 20.
-Pēc tam spēli var atvērt caur Eclipse, vai IntelliJ un eksportēt.
+Ja vēlaties kompilēt spēli, ir nepieciešams openjdk 20.
+Pēc tam spēli var atvērt caur Eclipse vai IntelliJ, palaižot iekš rīka vai to eksportējot.
 
 ### Savienošanās, lai spēlētu kopā
 
-Viens no spēlētājiem ir serveris, kamēr otrs ir klients.
+Lai izveidotu CO-OP bāzi, jeb mūsu gadījumā divu spēlētāju spēli, vienam no spēlētājiem būs
+jābūt serverim, bet otram klientam. Klients pieslēdzas pie servera un pārsūta savus datus, kuri tiek pārstrādāti
+un attiecīgi attēloti iekš spēles loga.
 
 Spēlētājam, kurš ir serveris ir jāuzsāk spēle ar `Host` pogu, kur būs jāievada ports pie kura slēgsies otrs spēlētājs.
 Ir svarīgi atcerēties, ka otrajam spēlētājam ir jābūt piekļuvei pie servera spēlētāja porta, kas nozīmē, ka ja abi spēlētāji nav LAN, tad servera spēlētājam ir jāatklāj ports, lai otrs spēlētājs varētu pieslēgties.
