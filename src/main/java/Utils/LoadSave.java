@@ -31,6 +31,9 @@ public class LoadSave {
 	public static final String PLAYING_BACKGROUND_IMG = "background1.png";
 	public static final String PLAYING_BACKGROUND_IMG_LAYER_2 = "background2.png";
 	public static final String PLAYING_BACKGROUND_IMG_LAYER_3 = "background3.png";
+	public static final String HEALTH_BAR_OUTLINE = "BarV7_ProgressBarBorder.png";
+	public static final String HEALTH_BAR = "BarV7_ProgressBar.png";
+	public static final String HEALTH_BAR_BG = "BarV7_Bar.png";
 
 	// Get the image file of an entity
 	public static BufferedImage GetSpriteAtlas(String fileName) {

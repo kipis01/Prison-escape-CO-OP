@@ -59,25 +59,31 @@ public class Constants {
 
 	public static class PlayerConstants {
 		public static final int IDLE = 0;
+		public static final int ATTACK = 1;
 		public static final int RUN = 2;
 		public static final int JUMP = 3;
 		public static final int FALL = 4;
-		public static final int ATTACK = 1;
+		public static final int HIT = 5;
+		public static final int DEAD = 6;
 
 		public static int GetSpriteAmount(int player_action) {
 			switch (player_action) {
 			case IDLE:
-				return 5;
-			case RUN:
-				return 7;
+				return 6;
 			case ATTACK:
-				return 5;
+				return 6;
+			case RUN:
+				return 6;
 			case JUMP:
-				return 7;
+				return 8;
 			case FALL:
-				return 7;
+				return 8;
+			case HIT:
+				return 3;
+			case DEAD:
+				return 9;
 			default:
-				return 1;
+				return 6;
 			}
 		}
 	}
@@ -90,7 +96,6 @@ public class Constants {
 		public static final int ATTACK = 2;
 		public static final int HIT = 3;
 		public static final int DEATH = 4;
-		public static final int FIGHT = 5;
 		
 		public static final int LIGHT_BANDIT_WIDTH_DEFAULT = 48;
 		public static final int LIGHT_BANDIT_HEIGHT_DEFAULT = 48;
@@ -106,24 +111,37 @@ public class Constants {
 			case LIGHT_BANDIT:
 				switch(enemy_state) {
 					case IDLE:
-						return 4;
-					case FIGHT:
-						return 4;
+						return 8;
 					case RUN:
 						return 8;
 					case ATTACK:
 						return 8;
 					case HIT:
-						return 1;
-					case DEATH:
 						return 8;
 					default:
-						return 8;
+						return 4;
 					}
 				}
 			
 			return 0;
-			
+		}
+		
+		public static int GetMaxHealth(int enemy_type) {
+			switch (enemy_type) {
+			case LIGHT_BANDIT:
+				return 50;
+			default:
+				return 1;
+			}
+		}
+		
+		public static int GetEnemyDmg(int enemy_type) {
+			switch (enemy_type) {
+			case LIGHT_BANDIT:
+				return 25;
+			default:
+				return 0;
+			}
 		}
 	}
 }

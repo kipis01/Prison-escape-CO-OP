@@ -2,6 +2,7 @@ package Entities;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import static Utils.Constants.Directions.*;
@@ -37,19 +38,33 @@ public class EnemyManager {
 		drawLightBandits(g, xLevelOffset);
 	}
 	
+	public void checkEnemyHit(Rectangle2D.Float attackBox) {
+		for (LightBandit lb : lbandits)
+			if (lb.isActive()) {
+				if(attackBox.intersects(lb.getHitbox())) {
+					lb.hurt(50);
+					return;
+				}
+			}
+	}
+	
 	private void drawLightBandits(Graphics g, int xLevelOffset) {
 		for(LightBandit lb : lbandits) {
-			BufferedImage animation;
+			if (lb.isActive()) {
+				BufferedImage animation;
+		
+				if (lb.getWalkDir() == RIGHT)
+					animation = FlipImage.flipImageHorizontally(lightBanditArr[lb.getEnemyState()][lb.getAniIndex()]);
+				else
+					animation = lightBanditArr[lb.getEnemyState()][lb.getAniIndex()];
+				
+				g.drawImage(animation, (int) lb.getHitbox().x - LIGHT_BANDIT_DRAWOFFSET_X - xLevelOffset, (int) lb.getHitbox().y - LIGHT_BANDIT_DRAWOFFSET_Y, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
+				
+				g.setColor(Color.RED);
+				g.drawRect((int) lb.getHitbox().x - xLevelOffset, (int) lb.getHitbox().y, (int) lb.getHitbox().width, (int) lb.getHitbox().height);
 			
-			if (lb.getWalkDir() == RIGHT)
-				animation = FlipImage.flipImageHorizontally(lightBanditArr[lb.getEnemyState()][lb.getAniIndex()]);
-			else
-				animation = lightBanditArr[lb.getEnemyState()][lb.getAniIndex()];
-			
-			g.drawImage(animation, (int) lb.getHitbox().x - LIGHT_BANDIT_DRAWOFFSET_X - xLevelOffset, (int) lb.getHitbox().y - LIGHT_BANDIT_DRAWOFFSET_Y, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
-			
-			g.setColor(Color.RED);
-			g.drawRect((int) lb.getHitbox().x - xLevelOffset, (int) lb.getHitbox().y, (int) lb.getHitbox().width, (int) lb.getHitbox().height);
+				lb.drawAttackBox(g,  xLevelOffset);
+			}
 		}
 	}
 
@@ -59,5 +74,10 @@ public class EnemyManager {
 		for (int j = 0; j < lightBanditArr.length; j++) 
 			for (int i = 0; i < lightBanditArr[j].length; i++) 
 				lightBanditArr[j][i] = temp.getSubimage(i * LIGHT_BANDIT_WIDTH_DEFAULT, j * LIGHT_BANDIT_HEIGHT_DEFAULT, LIGHT_BANDIT_WIDTH_DEFAULT , LIGHT_BANDIT_HEIGHT_DEFAULT);
+	}
+	
+	public void resetAllEnemies() {
+		for (LightBandit lb : lbandits)
+			lb.resetEnemy();
 	}
 }

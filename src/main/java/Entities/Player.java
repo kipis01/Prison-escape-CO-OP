@@ -6,7 +6,10 @@ import Utils.FlipImage;
 import Utils.LoadSave;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+
+import GameStates.Playing;
 
 import static Utils.Constants.PlayerConstants.*;
 import static Utils.HelpMethods.*;
@@ -28,7 +31,6 @@ public class Player extends Entity {
 	private float xDrawOffset = 18 * SCALE;
 	private float yDrawOffset = 24 * SCALE;
 	private boolean defaultDirection = true;
-	private int health;
 
 	// Player physics
 	private float playerSpeed = 0.6f * SCALE;
@@ -38,31 +40,87 @@ public class Player extends Entity {
 	private float jumpSpeed = -2f * SCALE;
 	private float fallSpeedAfterCollision = 0.5f * SCALE;
 	private boolean inAir = true;
-
-	private LevelManager levelManager;
-//	private PrisonGuard guard;
 	
-	public Player(float x, float y, int width, int height, LevelManager levelManager) {
+	// Player status
+	private float healthBarScale = 1f;
+	
+	private BufferedImage healthBarBG;
+	private BufferedImage healthBarOutline;
+	private BufferedImage healthBarLevel;
+	
+	private int healthBarBGWidth = (int) (271 * healthBarScale);
+	private int healthBarBGHeight = (int) (36 * healthBarScale);
+	private int healthBarBGX = (int) (40 * healthBarScale);
+	private int healthBarBGY = (int) (40 * healthBarScale);
+	
+	private int healthBarOutlineWidth = (int) (280 * healthBarScale);
+	private int healthBarOutlineHeight = (int) (53 * healthBarScale);
+	private int healthBarOutlineX = (int) (32 * healthBarScale);
+	private int healthBarOutlineY = (int) (31 * healthBarScale);
+	
+	private int healthBarLevelWidth = (int) (266 * healthBarScale);
+	private int healthBarLevelHeight = (int) (29 * healthBarScale);
+	private int healthBarLevelX = (int) (42 * healthBarScale);
+	private int healthBarLevelY = (int) (42 * healthBarScale);
+	
+	private int maxHealth = 100;
+	private int currentHealth = maxHealth;
+	private int healthWidth = healthBarLevelWidth;
+	
+	// Attack Hitbox
+	private Rectangle2D.Float attackBox;
+	
+	private boolean attackChecked;
+	private Playing playing;
+	
+	public Player(float x, float y, int width, int height, Playing playing) {
 		super(x, y, width, height);
+		this.playing = playing;
 		loadAnimations();
 		initHitbox(x, y, 18 * SCALE, 31 * SCALE);
-		this.health = 100; // Initialize health to 100
-		this.levelManager = levelManager; // Set the levelManager instance
+		initAttackBox();
+	}
+
+	private void initAttackBox() {
+		attackBox = new Rectangle2D.Float(x, y, (int)(20 * SCALE), (int)(20 * SCALE));
 	}
 
 	public void update() {
+		if (currentHealth <- 0) {
+			playing.setGameOver(true);
+			return;
+		}
+		
+		updateHealthBar();
+		updateAttackBox();
 		updatePos();
+		
+		if(attacking)
+			checkAttack();
+		
 		updateAnimationTick();
 		setAnimation();
+	}
+
+	private void checkAttack() {
+		if (attackChecked || aniIndex != 1)
+			return;
+		attackChecked = true;
+		playing.checkEnemyHit(attackBox);
 		
-//		if (attacking && guard != null && guard.isHit(hitbox)) {
-//			guard.takeDamage(10); // Inflict 10 damage on the guard
-//		}
-//		
-//		if (guard != null && hitbox.intersects(guard.getHitbox())) {
-//			System.out.println("Player collided with PrisonGuard!");
-//			// Perform actions when player collides with the guard
-//		}
+	}
+
+	private void updateAttackBox() {
+		if(right) {
+			attackBox.x = hitbox.x + hitbox.width + 1;
+		} else if (left) {
+			attackBox.x = hitbox.x - hitbox.width - 1;
+		}
+		attackBox.y = hitbox.y + (SCALE * 5);
+	}
+
+	private void updateHealthBar() {
+		healthWidth = (int) ((currentHealth / (float) maxHealth) * healthBarLevelWidth);
 	}
 
 	public void render(Graphics g, int levelOffset) {
@@ -76,18 +134,40 @@ public class Player extends Entity {
 		g.drawImage(animation, (int) (hitbox.x - xDrawOffset) - levelOffset, (int) (hitbox.y - yDrawOffset), width,
 				height, null);
 		drawHitbox(g, levelOffset);
+		drawAttackBox(g, levelOffset);
+		
+		drawUi(g);
+	}
 
+	private void drawAttackBox(Graphics g, int levelOffsetX) {
+		g.setColor(Color.red);
+		g.drawRect((int) attackBox.x - levelOffsetX, (int) attackBox.y, (int) attackBox.width, (int) attackBox.height);
+	}
+
+	private void drawUi(Graphics g) {
+		g.setColor(Color.gray);
+		g.fillRect(28, 28, healthBarLevelWidth + 4, healthBarLevelHeight + 4);
+		g.setColor(Color.red);
+		g.fillRect(30, 30, healthWidth, healthBarLevelHeight);
+		
+		//TODO: Implement health change with the images
+//		BufferedImage croppedImage = healthBarLevel.getSubimage(0, 0, healthBarLevelWidth - healthWidth, healthBarLevelHeight);
+		
+//		g.drawImage(healthBarBG, healthBarBGX, healthBarBGY, healthBarBGWidth, healthBarBGHeight, null);
+//		g.drawImage(croppedImage, healthBarLevelX, healthBarLevelY, healthBarLevelWidth, healthBarLevelHeight, null);
+//		g.drawImage(healthBarOutline, healthBarOutlineX, healthBarOutlineY, healthBarOutlineWidth, healthBarOutlineHeight, null);
 	}
 	
-	public void takeDamage() {
-		health -= 10; // Reduce health by 10 when taking damage
-		System.out.println("Player took damage. Current health: " + health);
-		if (health <= 0) {
-			// Player is defeated
-			System.out.println("Player is defeated. Game over!");
-			// Implement game over logic here
-		}
+	public void changeHealth(int value) {
+		currentHealth += value;
+		
+		if(currentHealth <= 0) {
+			currentHealth = 0;
+			//gameover();
+		} else if (currentHealth >= maxHealth)
+			currentHealth = maxHealth;
 	}
+
 	
 	private void loadAnimations() {
 		BufferedImage img = LoadSave.GetSpriteAtlas(LoadSave.PLAYER_ATLAS);
@@ -98,6 +178,10 @@ public class Player extends Entity {
 			for (int i = 0; i < animations.length; i++)
 				animations[j][i] = img.getSubimage(i * 56, j * 56, 56, 56);
 
+		healthBarBG = LoadSave.GetSpriteAtlas(LoadSave.HEALTH_BAR_BG);
+		healthBarLevel = LoadSave.GetSpriteAtlas(LoadSave.HEALTH_BAR);
+		healthBarOutline = LoadSave.GetSpriteAtlas(LoadSave.HEALTH_BAR_OUTLINE);
+		
 	}
 
 	public void loadLevelData(int[][] lvlData) {
@@ -125,6 +209,7 @@ public class Player extends Entity {
 			if (aniIndex >= GetSpriteAmount(playerAction)) {
 				aniIndex = 0;
 				attacking = false;
+				attackChecked = false;
 			}
 		}
 	}
@@ -144,9 +229,15 @@ public class Player extends Entity {
 				playerAction = FALL;
 		}
 
-		if (attacking)
+		if (attacking) {
 			playerAction = ATTACK;
-
+			if(startAni != ATTACK) {
+				aniIndex = 2;
+				aniTick = 0;
+				return;
+			}
+		}
+		
 		if (startAni != playerAction)
 			resetAniTick();
 	}
@@ -291,6 +382,21 @@ public class Player extends Entity {
 
 	public float getY() {
 		return y;
+	}
+	
+	public void resetAll() {
+		resetDirBooleans();
+		inAir = false;
+		attacking = false;
+		moving = false;
+		playerAction = IDLE;
+		currentHealth = maxHealth;
+		
+		hitbox.x = x;
+		hitbox.y = y;
+		
+		if (!IsEntityOnFloor(hitbox, lvlData))
+			inAir = true;
 	}
 
 }
