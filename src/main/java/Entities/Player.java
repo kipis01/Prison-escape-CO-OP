@@ -1,7 +1,12 @@
 package Entities;
 
 import static Main.Game.SCALE;
+import static Utils.Constants.ANI_SPEED;
+import static Utils.Constants.GRAVITY;
+import static Utils.Constants.Directions.LEFT;
+import static Utils.Constants.Directions.RIGHT;
 import static Utils.Constants.PlayerConstants.ATTACK;
+import static Utils.Constants.PlayerConstants.DEAD;
 import static Utils.Constants.PlayerConstants.FALL;
 import static Utils.Constants.PlayerConstants.GetSpriteAmount;
 import static Utils.Constants.PlayerConstants.IDLE;
@@ -18,13 +23,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import GameStates.Playing;
-import static Utils.Constants.Directions.*;
-import static Utils.Constants.PlayerConstants.*;
-import static Utils.HelpMethods.*;
-import static Utils.Constants.*;
-import static Utils.Constants.EnemyConstants.DEATH;
-import static Utils.Constants.EnemyConstants.HIT;
-import static Main.Game.SCALE;
 import Networking.NetWorker;
 import Networking.PlayerData;
 import Utils.FlipImage;
@@ -35,12 +33,12 @@ public class Player extends Entity {
 	// Arrays
 	private BufferedImage[][] animations;
 	private int[][] lvlData;
-  
-	//Animations
+
+	// Animations
 	private boolean moving = false, attacking = false;
 	private boolean left, right, jump, knockback, sprintRight, sprintLeft;
-	
-	//Player position
+
+	// Player position
 	private float xDrawOffset = 18 * SCALE;
 	private float yDrawOffset = 24 * SCALE;
 	private boolean defaultDirection = true;
@@ -50,7 +48,7 @@ public class Player extends Entity {
 	private float jumpSpeed = -2f * SCALE;
 	private float knockbackSpeed = -0.5f * SCALE;
 	private float fallSpeedAfterCollision = 0.5f * SCALE;
-	
+
 	// Player status
 	private int healthBarLevelWidth = 50;
 	private int healthWidth = healthBarLevelWidth;
@@ -76,13 +74,13 @@ public class Player extends Entity {
 
 	public void update() {
 		updateHealthBar();
-		
+
 		if (currentHealth <= 0) {
 			if (state != DEAD) {
 				state = DEAD;
 				aniTick = 0;
 				aniIndex = 0;
-				//TODO: Not working at the moment
+				// TODO: Not working at the moment
 //				playing.setPlayerDying(true);
 			} else if (aniIndex == GetSpriteAmount(DEAD) - 1 && aniTick >= ANI_SPEED - 1) {
 				playing.setGameOver(true);
@@ -101,7 +99,7 @@ public class Player extends Entity {
 	}
 
 	private void checkAttack() {
-		if (attackChecked || aniIndex != 3 )
+		if (attackChecked || aniIndex != 3)
 			return;
 		attackChecked = true;
 		playing.checkEnemyHit(attackBox);
@@ -130,21 +128,22 @@ public class Player extends Entity {
 		else
 			animation = animations[state][aniIndex];
 
-		//g.drawImage(animation, (int) (hitbox.x - xDrawOffset) - levelOffset, (int) (hitbox.y - yDrawOffset), width,
-	//			height, null);
-		
+		// g.drawImage(animation, (int) (hitbox.x - xDrawOffset) - levelOffset, (int)
+		// (hitbox.y - yDrawOffset), width,
+		// height, null);
+
 		drawHealthbar(g, levelOffset, healthWidth);
-		
+
 		// Debugging
 //		drawHitbox(g, levelOffset);
 //		drawAttackBox(g, levelOffset);
-	
+
 		int xLoc = (int) (hitbox.x - xDrawOffset) - levelOffset;
 		int yLoc = (int) (hitbox.y - yDrawOffset);
 
 		g.drawImage(animation, xLoc, yLoc, width, height, null);
 
-		playerData.xLoc = xLoc + levelOffset;
+		playerData.xLoc = xLoc - levelOffset;
 		playerData.yLoc = yLoc;
 		playerData.playerId = playerId;
 		playerData.playerAction = state;
@@ -160,8 +159,8 @@ public class Player extends Entity {
 			// TODO: handle exception
 		}
 
-		//drawHitbox(g, levelOffset);
-		//drawAttackBox(g, levelOffset);
+		// drawHitbox(g, levelOffset);
+		// drawAttackBox(g, levelOffset);
 	}
 
 	public void renderPlayerTwo(Graphics g, int levelOffset, PlayerData playerData) {
@@ -172,7 +171,7 @@ public class Player extends Entity {
 		else
 			animation = animations[playerData.playerAction][playerData.aniIndex];
 
-		g.drawImage(animation, playerData.xLoc, playerData.yLoc, width, height, null);
+		g.drawImage(animation, playerData.xLoc - levelOffset, playerData.yLoc, width, height, null);
 	}
 
 	protected void drawAttackBox(Graphics g, int levelOffsetX) {
@@ -180,7 +179,7 @@ public class Player extends Entity {
 		g.drawRect((int) attackBox.x - levelOffsetX, (int) attackBox.y, (int) attackBox.width, (int) attackBox.height);
 	}
 
-public void addKnockback(int value) {
+	public void addKnockback(int value) {
 		float xSpeed = 30f;
 		if (value == RIGHT) {
 			knockback();
@@ -189,17 +188,17 @@ public void addKnockback(int value) {
 			knockback();
 			updateXPos(-xSpeed);
 		}
-}
+	}
 
 	public void changeHealth(int value) {
 		currentHealth += value;
-		
+
 		if (currentHealth <= 0)
 
-		if(currentHealth <= 0) {
-			currentHealth = 0;
-		} else if (currentHealth >= maxHealth)
-			currentHealth = maxHealth;
+			if (currentHealth <= 0) {
+				currentHealth = 0;
+			} else if (currentHealth >= maxHealth)
+				currentHealth = maxHealth;
 	}
 
 	private void loadAnimations() {
@@ -225,7 +224,9 @@ public void addKnockback(int value) {
 
 	public void setAttacking(boolean attacking) {
 		this.attacking = attacking;
-	}	protected float fallSpeed;
+	}
+
+	protected float fallSpeed;
 
 	private void updateAnimationTick() {
 		aniTick++;
@@ -257,13 +258,13 @@ public void addKnockback(int value) {
 
 		if (attacking) {
 			state = ATTACK;
-			if(startAni != ATTACK) {
+			if (startAni != ATTACK) {
 				aniIndex = 2;
 				aniTick = 0;
 				return;
 			}
 		}
-		
+
 		if (startAni != state)
 			resetAniTick();
 	}
@@ -309,11 +310,11 @@ public void addKnockback(int value) {
 			sprintLeft = false;
 			defaultDirection = true;
 		}
-	
+
 		if (knockback)
 			knockback();
-		
-		//Up and down movement
+
+		// Up and down movement
 
 		// Up and down movement
 		if (!inAir)
@@ -324,7 +325,7 @@ public void addKnockback(int value) {
 			if (hitbox.y > 750) {
 				playing.setGameOver(true);
 			}
-			
+
 			if (CanMoveHere(hitbox.x, hitbox.y + airSpeed, hitbox.width, hitbox.height, lvlData)) {
 				hitbox.y += airSpeed;
 				airSpeed += GRAVITY;
@@ -349,7 +350,7 @@ public void addKnockback(int value) {
 		inAir = true;
 		airSpeed = jumpSpeed;
 	}
-	
+
 	private void knockback() {
 		if (inAir)
 			return;
@@ -374,7 +375,6 @@ public void addKnockback(int value) {
 			hitbox.x = GetEntityXPosNextToWall(hitbox, xSpeed);
 		}
 	}
-	
 
 	public boolean isLeft() {
 		return left;
@@ -391,7 +391,8 @@ public void addKnockback(int value) {
 	public void setRight(boolean right) {
 		this.right = right;
 	}
-	public void setSprint (boolean sprint) {
+
+	public void setSprint(boolean sprint) {
 		if (defaultDirection == true) {
 			this.sprintRight = sprint;
 		} else

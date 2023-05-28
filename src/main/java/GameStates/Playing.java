@@ -58,6 +58,7 @@ public class Playing extends State implements Statemethods {
 	private int playerId;
 	private boolean isPlayerTwoConnected;
 	private boolean connected = false;
+
 	public Playing(Game game) {
 		super(game);
 		initClasses();
@@ -117,7 +118,7 @@ public class Playing extends State implements Statemethods {
 
 	@Override
 	public void update() {
-		if(paused) 
+		if (paused)
 			pauseOverlay.update();
 		else if (gameOver) {
 //			gameOverOverlay.update();
@@ -128,7 +129,7 @@ public class Playing extends State implements Statemethods {
 			player.update();
 			enemyManager.update(levelManager.getCurrentLevel().getLevelData(), player);
 			checkCloseToBorder();
-		} 
+		}
 	}
 
 	// Check when to move the background based on the player position
@@ -203,7 +204,7 @@ public class Playing extends State implements Statemethods {
 
 			}
 			if (recPackets.isEmpty() && tmPlayerData != null) {
-				player.renderPlayerTwo(g, maxLevelOffsetX, tmPlayerData);
+				player.renderPlayerTwo(g, xLevelOffset, tmPlayerData);
 			}
 		}
 
