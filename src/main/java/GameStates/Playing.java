@@ -12,6 +12,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 
 import Entities.EnemyManager;
@@ -54,7 +55,7 @@ public class Playing extends State implements Statemethods {
 	private NetWorker server, client;
 	private PlayerData playerData;
 	private PlayerData tmPlayerData;
-	private NpcData tmpNpcData;
+	private List<NpcData> tmpNpcData;
 	private int playerId;
 	private boolean isPlayerTwoConnected;
 	private boolean connected = false;
@@ -97,7 +98,7 @@ public class Playing extends State implements Statemethods {
 
 	private void initClient() {
 		try {
-			client = new NetWorker(InetAddress.getByName("192.168.1.50"), 8000, "temp");
+			client = new NetWorker(InetAddress.getByName("localhost"), 8000, "temp");
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
@@ -127,7 +128,8 @@ public class Playing extends State implements Statemethods {
 		} else {
 			levelManager.update();
 			player.update();
-			enemyManager.update(levelManager.getCurrentLevel().getLevelData(), player);
+			if (NetworkState.state == NetworkState.HOST)
+				enemyManager.update(levelManager.getCurrentLevel().getLevelData(), player);
 			checkCloseToBorder();
 		}
 	}
@@ -176,9 +178,10 @@ public class Playing extends State implements Statemethods {
 
 		// playerTwo
 		if (connected) {
-
+			Boolean playerDrawn = false;
+			Boolean npcDrawn = false;
 			PlayerData playerTwoData = new PlayerData();
-			NpcData npcData = new NpcData();
+			List<NpcData> npcData = new ArrayList<>();
 
 			List<Object> recPackets = NetworkState.state == NetworkState.HOST ? server.getReceivedPackets()
 					: client.getReceivedPackets();
@@ -194,18 +197,22 @@ public class Playing extends State implements Statemethods {
 						if (playerTwoData.playerId != playerId)
 							isPlayerTwoConnected = true;
 						player.renderPlayerTwo(g, xLevelOffset, playerTwoData);
+						playerDrawn = true;
 
 					}
-					if (packet instanceof NpcData) {
-						tmpNpcData = npcData = (NpcData) packet;
+					if (packet instanceof List) {
+
+						tmpNpcData = npcData = (List<NpcData>) packet;
 						enemyManager.drawClient(g, xLevelOffset, npcData);
+						npcDrawn = true;
 					}
 				}
 
 			}
-			if (recPackets.isEmpty() && tmPlayerData != null) {
+			if (!playerDrawn && tmPlayerData != null)
 				player.renderPlayerTwo(g, xLevelOffset, tmPlayerData);
-			}
+			if (!npcDrawn && tmpNpcData != null)
+				enemyManager.drawClient(g, xLevelOffset, tmpNpcData);
 		}
 
 		if (NetworkState.state == NetworkState.HOST) {

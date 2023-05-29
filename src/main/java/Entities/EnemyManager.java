@@ -15,6 +15,7 @@ import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 
 import GameStates.Playing;
 import Networking.NetWorker;
@@ -48,24 +49,26 @@ public class EnemyManager {
 		drawLightBandits(g, xLevelOffset, server, isPlayerTwoConnected);
 	}
 
-	public void drawClient(Graphics g, int xLevelOffset, NpcData npc) {
-		drawLightBanditsClient(g, xLevelOffset, npc);
+	public void drawClient(Graphics g, int xLevelOffset, List<NpcData> banditData) {
+		drawLightBanditsClient(g, xLevelOffset, banditData);
 	}
 
-	private void drawLightBanditsClient(Graphics g, int xLevelOffset, NpcData npc) {
+	private void drawLightBanditsClient(Graphics g, int xLevelOffset, List<NpcData> banditData) {
+		for (NpcData npc : banditData) {
+			if (npc.isActive) {
+				BufferedImage animation;
 
-		if (npc.isActive) {
-			BufferedImage animation;
+				if (npc.direction == RIGHT)
+					animation = FlipImage.flipImageHorizontally(lightBanditArr[npc.enemyState][npc.aniIndex]);
+				else
+					animation = lightBanditArr[npc.enemyState][npc.aniIndex];
 
-			if (npc.direction == RIGHT)
-				animation = FlipImage.flipImageHorizontally(lightBanditArr[npc.enemyState][npc.aniIndex]);
-			else
-				animation = lightBanditArr[npc.enemyState][npc.aniIndex];
+				g.drawImage(animation, npc.xLoc - xLevelOffset, npc.yLoc, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT,
+						null);
 
-			g.drawImage(animation, npc.xLoc - xLevelOffset, npc.yLoc, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
+				g.setColor(Color.RED);
 
-			g.setColor(Color.RED);
-
+			}
 		}
 
 	}
@@ -81,6 +84,8 @@ public class EnemyManager {
 	}
 
 	private void drawLightBandits(Graphics g, int xLevelOffset, NetWorker server, boolean isPlayerTwoConnected) {
+		List<NpcData> banditData = new ArrayList<>();
+
 		for (LightBandit lb : lbandits) {
 			if (lb.isActive()) {
 				BufferedImage animation;
@@ -103,6 +108,7 @@ public class EnemyManager {
 				g.drawImage(animation, xLoc, yLoc, LIGHT_BANDIT_WIDTH, LIGHT_BANDIT_HEIGHT, null);
 
 				NpcData npc = new NpcData();
+
 				npc.xLoc = xLoc + xLevelOffset;
 				npc.yLoc = yLoc;
 				npc.enemyState = lb.getEnemyState();
@@ -110,15 +116,18 @@ public class EnemyManager {
 				npc.direction = lb.getWalkDir();
 				npc.isActive = lb.isActive();
 
-				try {
-					if (isPlayerTwoConnected) {
-						server.SendPacket(npc);
-					}
+				banditData.add(npc);
 
-				} catch (Exception e) {
-					// TODO: handle exception
-				}
 			}
+		}
+
+		try {
+			if (isPlayerTwoConnected) {
+				server.SendPacket(banditData);
+			}
+
+		} catch (Exception e) {
+			// TODO: handle exception
 		}
 	}
 
