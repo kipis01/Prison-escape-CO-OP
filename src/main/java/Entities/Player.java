@@ -127,7 +127,7 @@ public class Player extends Entity {
 	}
 
 	private void checkAttackPlayerTwo(PlayerData playerData) {
-		System.out.println(playerData.aniIndex);
+
 		if (attackChecked || playerData.aniIndex != 3)
 			return;
 		attackChecked = true;
