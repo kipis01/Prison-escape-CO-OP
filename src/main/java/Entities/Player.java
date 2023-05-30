@@ -98,10 +98,49 @@ public class Player extends Entity {
 		setAnimation();
 	}
 
+	public void updatePlayerTwo(PlayerData playerData) {
+		attacking = playerData.attacking;
+
+		updateHealthBar();
+
+		if (currentHealth <= 0) {
+			if (state != DEAD) {
+				state = DEAD;
+				aniTick = 0;
+				aniIndex = 0;
+				// TODO: Not working at the moment
+//				playing.setPlayerDying(true);
+			} else if (aniIndex == GetSpriteAmount(DEAD) - 1 && aniTick >= ANI_SPEED - 1) {
+				playing.setGameOver(true);
+			} else
+				updateAnimationTick();
+			return;
+		}
+
+		if (attacking) {
+
+			checkAttackPlayerTwo(playerData);
+		}
+
+		updateAnimationTick();
+
+	}
+
+	private void checkAttackPlayerTwo(PlayerData playerData) {
+
+		if (attackChecked || playerData.aniIndex != 3)
+			return;
+		attackChecked = true;
+
+		playing.checkEnemyHit(attackBox);
+
+	}
+
 	private void checkAttack() {
 		if (attackChecked || aniIndex != 3)
 			return;
 		attackChecked = true;
+
 		playing.checkEnemyHit(attackBox);
 
 	}
@@ -149,6 +188,7 @@ public class Player extends Entity {
 		playerData.playerAction = state;
 		playerData.aniIndex = aniIndex;
 		playerData.defaultDirection = defaultDirection;
+		playerData.attacking = attacking;
 
 		try {
 			if (isPlayerTwoConnected) {
@@ -171,7 +211,23 @@ public class Player extends Entity {
 		else
 			animation = animations[playerData.playerAction][playerData.aniIndex];
 
+		drawHealthbar(g, levelOffset, healthWidth);
+//		drawHitbox(g, levelOffset);
+//		drawAttackBox(g, levelOffset);
+
+		updatePlayerTwoHitbox(playerData);
+
 		g.drawImage(animation, playerData.xLoc - levelOffset, playerData.yLoc, width, height, null);
+
+		updatePlayerTwo(playerData);
+	}
+
+	private void updatePlayerTwoHitbox(PlayerData playerData) {
+		hitbox.x = playerData.xLoc + 42;
+		hitbox.y = playerData.yLoc + 62;
+
+		attackBox.x = playerData.xLoc + 84;
+		attackBox.y = playerData.yLoc + 77;
 	}
 
 	protected void drawAttackBox(Graphics g, int levelOffsetX) {
@@ -416,6 +472,7 @@ public class Player extends Entity {
 		inAir = false;
 		attacking = false;
 		moving = false;
+		jump = false;
 		state = IDLE;
 		currentHealth = maxHealth;
 

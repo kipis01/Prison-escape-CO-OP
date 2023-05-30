@@ -16,8 +16,6 @@ import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 
-import Main.Game;
-
 public class LightBandit extends Enemy implements Serializable {
 
 	public LightBandit(float x, float y) {
@@ -48,10 +46,10 @@ public class LightBandit extends Enemy implements Serializable {
 	public int getWalkDir() {
 		return this.walkDir;
 	}
-	
+
 	public int getCurrentHealth() {
 		return this.currentHealth;
-}
+	}
 
 	public void drawAttackBox(Graphics g, int xLevelOffset) {
 		g.setColor(Color.blue);
@@ -66,12 +64,12 @@ public class LightBandit extends Enemy implements Serializable {
 		if (inAir) {
 			updateInAir(lvlData);
 		} else {
-			switch(state) {
+			switch (state) {
 			case IDLE:
 				newState(RUN);
 				break;
 			case RUN:
-				if(canSeePlayer(lvlData, player)) {
+				if (canSeePlayer(lvlData, player)) {
 					turnTowardsPlayer(player);
 					if (isPlayerCloseForAttack(player))
 						newState(ATTACK);
@@ -81,7 +79,7 @@ public class LightBandit extends Enemy implements Serializable {
 			case ATTACK:
 				if (aniIndex == 0)
 					attackChecked = false;
-				if(aniIndex == 4 && !attackChecked)
+				if (aniIndex == 4 && !attackChecked)
 					checkPlayerHit(attackBox, player);
 				break;
 			case HIT:

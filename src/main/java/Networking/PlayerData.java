@@ -9,5 +9,6 @@ public class PlayerData implements Serializable {
 	public int playerAction;
 	public int aniIndex;
 	public boolean defaultDirection;
+	public boolean attacking;
 //	animations[playerAction][aniIndex];
 }
