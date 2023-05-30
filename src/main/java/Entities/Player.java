@@ -174,8 +174,8 @@ public class Player extends Entity {
 		drawHealthbar(g, levelOffset, healthWidth);
 
 		// Debugging
-		drawHitbox(g, levelOffset);
-		drawAttackBox(g, levelOffset);
+//		drawHitbox(g, levelOffset);
+//		drawAttackBox(g, levelOffset);
 
 		int xLoc = (int) (hitbox.x - xDrawOffset) - levelOffset;
 		int yLoc = (int) (hitbox.y - yDrawOffset);
@@ -212,8 +212,8 @@ public class Player extends Entity {
 			animation = animations[playerData.playerAction][playerData.aniIndex];
 
 		drawHealthbar(g, levelOffset, healthWidth);
-		drawHitbox(g, levelOffset);
-		drawAttackBox(g, levelOffset);
+//		drawHitbox(g, levelOffset);
+//		drawAttackBox(g, levelOffset);
 
 		updatePlayerTwoHitbox(playerData);
 

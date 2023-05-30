@@ -93,7 +93,7 @@ public class Playing extends State implements Statemethods {
 
 	private void initClient() {
 		try {
-			client = new NetWorker(InetAddress.getByName("localhost"), 8000, "temp");
+			client = new NetWorker(InetAddress.getByName("192.168.1.50"), 8000, "temp");
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
