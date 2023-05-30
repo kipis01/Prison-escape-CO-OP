@@ -28,6 +28,7 @@ import Utils.LoadSave;
 
 public class Playing extends State implements Statemethods {
 	private Player player;
+	private Player player2 = null;
 
 	private LevelManager levelManager;
 	private EnemyManager enemyManager;
@@ -59,6 +60,7 @@ public class Playing extends State implements Statemethods {
 	private int playerId;
 	private boolean isPlayerTwoConnected;
 	private boolean connected = false;
+	private int tmpUpdateCheck = 0;
 
 	public Playing(Game game) {
 		super(game);
@@ -70,7 +72,7 @@ public class Playing extends State implements Statemethods {
 	}
 
 	private void initClasses() {
-		initNet();
+
 		// Load the level
 		levelManager = new LevelManager(game);
 
@@ -80,20 +82,13 @@ public class Playing extends State implements Statemethods {
 		// Load the player
 		player = new Player(200, 100, (int) (56 * game.SCALE), (int) (56 * game.SCALE), this);
 		player.loadLevelData(levelManager.getCurrentLevel().getLevelData());
+
+		player2 = new Player(200, 100, (int) (56 * game.SCALE), (int) (56 * game.SCALE), this);
+		player2.loadLevelData(levelManager.getCurrentLevel().getLevelData());
+
 		pauseOverlay = new PauseOverlay(this);
 		gameOverOverlay = new GameOverOverlay(this);
 
-	}
-
-	private void initNet() {
-		switch (NetworkState.state) {
-		case HOST:
-			initHost();
-			break;
-		case JOIN:
-			initClient();
-			break;
-		}
 	}
 
 	private void initClient() {
@@ -119,6 +114,7 @@ public class Playing extends State implements Statemethods {
 
 	@Override
 	public void update() {
+		tmpUpdateCheck++;
 		if (paused)
 			pauseOverlay.update();
 		else if (gameOver) {
@@ -128,10 +124,18 @@ public class Playing extends State implements Statemethods {
 		} else {
 			levelManager.update();
 			player.update();
-			if (NetworkState.state == NetworkState.HOST)
-				enemyManager.update(levelManager.getCurrentLevel().getLevelData(), player);
+			if (NetworkState.state == NetworkState.HOST) {
+				if (tmpUpdateCheck == 1)
+					enemyManager.update(levelManager.getCurrentLevel().getLevelData(), player);
+				if (tmpUpdateCheck == 2)
+					enemyManager.update(levelManager.getCurrentLevel().getLevelData(), player2);
+			}
+
 			checkCloseToBorder();
 		}
+		if (tmpUpdateCheck == 2)
+			tmpUpdateCheck = 0;
+
 	}
 
 	// Check when to move the background based on the player position
@@ -152,19 +156,9 @@ public class Playing extends State implements Statemethods {
 	@Override
 	public void draw(Graphics g) {
 
-		if (NetworkState.state == NetworkState.JOIN && !connected) {
-			initClient();
-			if (client != null)
-				connected = true;
-		}
+		if (!connected)
+			makeConnection();
 
-		if (NetworkState.state == NetworkState.HOST && !connected) {
-			initHost();
-			if (server != null)
-				connected = true;
-		}
-
-		playerId = NetworkState.state == NetworkState.HOST ? 1 : 2;
 		PlayerData playerData = new PlayerData();
 		g.drawImage(backgroundImg, 0, 0, Game.GAME_WIDTH, Game.GAME_HEIGHT, null);
 		drawLayer2(g);
@@ -172,53 +166,16 @@ public class Playing extends State implements Statemethods {
 
 		levelManager.draw(g, xLevelOffset);
 
-		// Draw the player
-		player.render(g, xLevelOffset, NetworkState.state == NetworkState.HOST ? server : client, playerData, playerId,
+		// Draw the host player
+		player.render(g, xLevelOffset, NetworkState.state == NetworkState.HOST ? server : client, playerData, 1,
 				NetworkState.state == NetworkState.HOST ? isPlayerTwoConnected : true);
 
 		// playerTwo
-		if (connected) {
-			Boolean playerDrawn = false;
-			Boolean npcDrawn = false;
-			PlayerData playerTwoData = new PlayerData();
-			List<NpcData> npcData = new ArrayList<>();
+		if (connected && player2 != null)
+			drawPlayerTwo(g);
 
-			List<Object> recPackets = NetworkState.state == NetworkState.HOST ? server.getReceivedPackets()
-					: client.getReceivedPackets();
-
-			if (!recPackets.isEmpty()) {
-//				System.out.println(recPackets);
-
-				for (Object packet : recPackets) {
-
-					if (packet instanceof PlayerData) {
-
-						tmPlayerData = playerTwoData = (PlayerData) packet;
-						if (playerTwoData.playerId != playerId)
-							isPlayerTwoConnected = true;
-						player.renderPlayerTwo(g, xLevelOffset, playerTwoData);
-						playerDrawn = true;
-
-					}
-					if (packet instanceof List) {
-
-						tmpNpcData = npcData = (List<NpcData>) packet;
-						enemyManager.drawClient(g, xLevelOffset, npcData);
-						npcDrawn = true;
-					}
-				}
-
-			}
-			if (!playerDrawn && tmPlayerData != null)
-				player.renderPlayerTwo(g, xLevelOffset, tmPlayerData);
-			if (!npcDrawn && tmpNpcData != null)
-				enemyManager.drawClient(g, xLevelOffset, tmpNpcData);
-		}
-
-		if (NetworkState.state == NetworkState.HOST) {
-			// Draw the enemies
+		if (NetworkState.state == NetworkState.HOST)
 			enemyManager.draw(g, xLevelOffset, server, isPlayerTwoConnected);
-		}
 
 		if (paused) {
 			g.setColor(new Color(0, 0, 0, 150));
@@ -229,11 +186,67 @@ public class Playing extends State implements Statemethods {
 		}
 	}
 
+	private void makeConnection() {
+		if (NetworkState.state == NetworkState.JOIN) {
+			initClient();
+			if (client != null)
+				connected = true;
+		}
+
+		if (NetworkState.state == NetworkState.HOST) {
+			initHost();
+			if (server != null)
+				connected = true;
+		}
+
+	}
+
 	public void resetAll() {
 		gameOver = false;
 		paused = false;
 		player.resetAll();
 		enemyManager.resetAllEnemies();
+	}
+
+	public void drawPlayerTwo(Graphics g) {
+		Boolean playerDrawn = false;
+		Boolean npcDrawn = false;
+		PlayerData playerTwoData = new PlayerData();
+		List<NpcData> npcData = new ArrayList<>();
+
+		List<Object> recPackets = NetworkState.state == NetworkState.HOST ? server.getReceivedPackets()
+				: client.getReceivedPackets();
+
+		if (!recPackets.isEmpty()) {
+//			System.out.println(recPackets);
+
+			for (Object packet : recPackets) {
+
+				if (packet instanceof PlayerData) {
+
+					tmPlayerData = playerTwoData = (PlayerData) packet;
+
+					if (playerTwoData.playerId != playerId)
+						isPlayerTwoConnected = true;
+
+					player2.renderPlayerTwo(g, xLevelOffset, playerTwoData);
+
+					playerDrawn = true;
+
+				}
+				if (packet instanceof List) {
+
+					tmpNpcData = npcData = (List<NpcData>) packet;
+					enemyManager.drawClient(g, xLevelOffset, npcData);
+					npcDrawn = true;
+				}
+			}
+
+		}
+		if (!playerDrawn && tmPlayerData != null)
+			player2.renderPlayerTwo(g, xLevelOffset, tmPlayerData);
+		if (!npcDrawn && tmpNpcData != null)
+			enemyManager.drawClient(g, xLevelOffset, tmpNpcData);
 	}
 
 	public void setGameOver(boolean gameOver) {

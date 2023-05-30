@@ -115,6 +115,7 @@ public class EnemyManager {
 				npc.aniIndex = lb.getAniIndex();
 				npc.direction = lb.getWalkDir();
 				npc.isActive = lb.isActive();
+				npc.healthWidth = healthWidth;
 
 				banditData.add(npc);
 
