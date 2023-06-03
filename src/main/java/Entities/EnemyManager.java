@@ -19,7 +19,7 @@ import java.util.List;
 
 import GameStates.Playing;
 import Networking.NetWorker;
-import Networking.NpcData;
+import Networking.Packets.NpcData;
 import Utils.FlipImage;
 import Utils.LoadSave;
 

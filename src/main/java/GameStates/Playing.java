@@ -19,9 +19,10 @@ import Entities.EnemyManager;
 import Entities.Player;
 import Levels.LevelManager;
 import Main.Game;
+import Networking.Constants;
 import Networking.NetWorker;
-import Networking.NpcData;
-import Networking.PlayerData;
+import Networking.Packets.NpcData;
+import Networking.Packets.PlayerData;
 import Ui.GameOverOverlay;
 import Ui.PauseOverlay;
 import Utils.LoadSave;
@@ -93,7 +94,7 @@ public class Playing extends State implements Statemethods {
 
 	private void initClient() {
 		try {
-			client = new NetWorker(InetAddress.getByName("192.168.1.50"), 8000, "temp");
+			client = new NetWorker(InetAddress.getByName(Constants.serverAddress), Constants.serverPort, Constants.password);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
@@ -103,7 +104,7 @@ public class Playing extends State implements Statemethods {
 	}
 
 	private void initHost() {
-		server = new NetWorker(8000, "temp");
+		server = new NetWorker(Constants.serverPort, Constants.password);
 		server.startNetWorker();
 
 	}

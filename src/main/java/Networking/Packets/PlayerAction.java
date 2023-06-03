@@ -1,4 +1,4 @@
-package Networking;
+package Networking.Packets;
 
 import java.io.Serializable;
 

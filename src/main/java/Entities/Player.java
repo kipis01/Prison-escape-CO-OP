@@ -24,7 +24,7 @@ import java.awt.image.BufferedImage;
 
 import GameStates.Playing;
 import Networking.NetWorker;
-import Networking.PlayerData;
+import Networking.Packets.PlayerData;
 import Utils.FlipImage;
 import Utils.LoadSave;
 

@@ -48,8 +48,9 @@ ___
 
 #### Bez kompilēšanas
 
-Ja vēlas spēli palaist bez nepieciešamības kompilēt, tad ir iespējams nolādēt nokompilēto versiju no `Releases` sadaļas.
-Papildus Jums būs nepieciešams ielādēt Java 20.
+*Pašlaik neaktuāli*
+
+~~Ja vēlas spēli palaist bez nepieciešamības kompilēt, tad ir iespējams nolādēt nokompilēto versiju no `Releases` sadaļas..~~
 
 #### Ar kompilēšanu
 
@@ -57,6 +58,9 @@ Ja vēlaties kompilēt spēli, ir nepieciešams openjdk 20.
 Pēc tam spēli var atvērt caur Eclipse vai IntelliJ, palaižot iekš rīka vai to eksportējot.
 
 ### Savienošanās, lai spēlētu kopā
+
+**Svarīgi:** Pašlaik vienīgais veids, kā norādīt paroli, servera portu un adresi ir tos nomainīt zem pakotnes 'Networking' klasē 'Constants'.
+Nākamajā versijā ir paredzēts šos parametrus ievadīt caur UI.
 
 Lai izveidotu CO-OP bāzi, jeb mūsu gadījumā divu spēlētāju spēli, vienam no spēlētājiem būs
 jābūt serverim, bet otram klientam. Klients pieslēdzas pie servera un pārsūta savus datus, kuri tiek pārstrādāti
